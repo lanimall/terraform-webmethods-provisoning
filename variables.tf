@@ -81,3 +81,15 @@ variable "webmethods_cc_ssh_user" {
   description = "the user that command central will use to connectto the remote servers"
   default = "ec2-user"
 }
+
+variable "webmethods_integration_license_key_alias" {
+  description = "the license key alias for webmethods integration server"
+}
+
+variable "webmethods_universalmessaging_license_key_alias" {
+  description = "the license key alias for webmethods universal messaging"
+}
+
+variable "webmethods_terracotta_license_key_alias" {
+  description = "the license key alias for webmethods terracotta"
+}

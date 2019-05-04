@@ -35,3 +35,23 @@ resource "aws_route53_record" "webmethods_integration1-a-record" {
         "${aws_instance.webmethods_integration1.private_ip}"
     ]
 }
+
+resource "aws_route53_record" "webmethods_universalmessaging1-a-record" {
+    zone_id = "${aws_route53_zone.webmethods-internal.zone_id}"
+    name = "universalmessaging1.webmethods.local"
+    type = "A"
+    ttl  = 300
+    records = [
+        "${aws_instance.webmethods_universalmessaging1.private_ip}"
+    ]
+}
+
+resource "aws_route53_record" "webmethods_terracotta1-a-record" {
+    zone_id = "${aws_route53_zone.webmethods-internal.zone_id}"
+    name = "terracotta1.webmethods.local"
+    type = "A"
+    ttl  = 300
+    records = [
+        "${aws_instance.webmethods_terracotta1.private_ip}"
+    ]
+}

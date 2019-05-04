@@ -77,6 +77,12 @@ ssh-keyscan -t rsa -H $(terraform output bastion-public_ip) >> ~/.ssh/known_host
 ssh -A ec2-user@$(terraform output bastion-public_ip) "ssh-keyscan -t rsa -H $(terraform output webmethods_integration1-private_route53_dns)>> ~/.ssh/known_hosts" && \
 ssh -A ec2-user@$(terraform output bastion-public_ip) "ssh-keyscan -t rsa -H $(terraform output webmethods_integration1-private_dns) >> ~/.ssh/known_hosts" && \
 ssh -A ec2-user@$(terraform output bastion-public_ip) "ssh-keyscan -t rsa -H $(terraform output webmethods_integration1-private_ip) >> ~/.ssh/known_hosts" && \
+ssh -A ec2-user@$(terraform output bastion-public_ip) "ssh-keyscan -t rsa -H $(terraform output webmethods_universalmessaging1-private_route53_dns)>> ~/.ssh/known_hosts" && \
+ssh -A ec2-user@$(terraform output bastion-public_ip) "ssh-keyscan -t rsa -H $(terraform output webmethods_universalmessaging1-private_dns) >> ~/.ssh/known_hosts" && \
+ssh -A ec2-user@$(terraform output bastion-public_ip) "ssh-keyscan -t rsa -H $(terraform output webmethods_universalmessaging1-private_ip) >> ~/.ssh/known_hosts" && \
+ssh -A ec2-user@$(terraform output bastion-public_ip) "ssh-keyscan -t rsa -H $(terraform output webmethods_terracotta1-private_route53_dns)>> ~/.ssh/known_hosts" && \
+ssh -A ec2-user@$(terraform output bastion-public_ip) "ssh-keyscan -t rsa -H $(terraform output webmethods_terracotta1-private_dns) >> ~/.ssh/known_hosts" && \
+ssh -A ec2-user@$(terraform output bastion-public_ip) "ssh-keyscan -t rsa -H $(terraform output webmethods_terracotta1-private_ip) >> ~/.ssh/known_hosts" && \
 scp ./helper_scripts/id_rsa ec2-user@$(terraform output bastion-public_ip):~/.ssh/ && \
 echo DONE!
 ```
@@ -95,16 +101,23 @@ ssh -A ec2-user@$(terraform output bastion-public_ip)
 
 ### Run webMethods Command Central Provisoning
 
-Run the install script:
+Before running the provisoning, let's add all the product licenses you have (or plan on using for this demo) to the server (Ideally, that would get downloaded automatically by the scripts)
+
+Note: The webMethods provisoning script for command central (the ones in [webMethods-devops-provisioning]https://github.com/lanimall/webMethods-devops-provisioning.git expects a zip file named "sag_licenses.zip" in the user home... So let's follow this standard (you could change this if absolutely needed)
 ```
-cat ./helper_scripts/install-cce.sh | ssh -A ec2-user@$(terraform output bastion-public_ip)
+scp ~/sag_licenses.zip ec2-user@$(terraform output bastion-public_ip):~/sag_licenses.zip
 ```
 
-OR alternatively, you could copy the script to the bastion server and then run it there (eg. if you want to run it all in the background using nohup for example) 
+Once the license file is in position, we can run the Command Central install script by copying it to the bastion server and then running it from there (since the script will run for a little while, I like to use nohup just in case I lose the connectivity to the server...)
 ```
 scp ./helper_scripts/install-cce.sh ec2-user@$(terraform output bastion-public_ip):~/
 ssh ec2-user@$(terraform output bastion-public_ip)
 nohup /bin/bash install-cce.sh > nohup-install-cce.log &
+```
+
+Alternatively, you could run the script directly from your machine in one shot:
+```
+cat ./helper_scripts/install-cce.sh | ssh -A ec2-user@$(terraform output bastion-public_ip)
 ```
 
 NOTE: Be patient...this will take 10s of minutes: ansible at work!!!
@@ -114,9 +127,22 @@ At the end, command central should be running and accessible:
 open https://$(terraform output bastion-public_ip):8091/cce/web/
 ```
 
+You should now be able to login to the UI using the Administrator user and the Password you chose at the beginning of the terraform apply step.
+
+Once in, you should now have the following configurations applied and working:
+- Registered product repository
+- Registered fix repository
+- Registered licenses
+- Registered passwords
+
 ### Run webMethods Products Provisoning
 
+From there, we can now run the inventory provisoning. The following first copy the two inventory scripts to the server...and then run it.
+
 ```
-nohup /bin/bash install-inventory.sh > nohup-inventory.log &
+scp ./helper_scripts/install-inventory.sh ec2-user@$(terraform output bastion-public_ip):~/
+scp ./helper_scripts/cce-inventory.sh ec2-user@$(terraform output bastion-public_ip):~/
+ssh ec2-user@$(terraform output bastion-public_ip)
+nohup /bin/bash inventory-install.sh > nohup-inventory.log &
 ```
 

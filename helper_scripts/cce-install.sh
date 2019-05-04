@@ -12,18 +12,8 @@ if [ -f ${HOME}/setenv_cce_init_secrets.sh ]; then
     . ${HOME}/setenv_cce_init_secrets.sh
 fi
 
-## apply env
-if [ -f ${HOME}/setenv_inventory.sh ]; then
-    . ${HOME}/setenv_inventory.sh
-fi
-
-# Run the install steps
-
-# 1 - Install command central
+# Install command central
 ./scripts/provision_ccserver.sh
-
-# 2 - Configure command central
-./scripts/configure_ccserver.sh
 
 ## clear env
 # if [ -f ${HOME}/setenv_cce_remove_secrets.sh ]; then
