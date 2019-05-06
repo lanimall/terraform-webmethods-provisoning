@@ -49,10 +49,7 @@ resource "aws_instance" "bastion" {
     )
   )}"
 
-  provisioner "local-exec" {
-    command = "ssh-keyscan -t rsa -H ${aws_instance.bastion.public_ip} >> ~/.ssh/known_hosts"
-  }
-
+  ////// copying all the files we need on the bastion server
   provisioner "file" {
     source      = "${path.cwd}/helper_scripts/id_rsa"
     destination = "~/.ssh/id_rsa"
@@ -98,6 +95,17 @@ resource "aws_instance" "bastion" {
   }
 
   provisioner "file" {
+    source      = "${path.cwd}/helper_scripts/bootstrap-complete.sh"
+    destination = "~/bootstrap-complete.sh"
+
+    connection {
+      type        = "ssh"
+      user        = "${var.default_linuxuser}"
+      private_key = "${file("${path.cwd}/helper_scripts/id_rsa_bastion")}"
+    }
+  }
+
+  provisioner "file" {
     source      = "~/sag_licenses.zip"
     destination = "~/sag_licenses.zip"
 
@@ -108,8 +116,10 @@ resource "aws_instance" "bastion" {
     }
   }
 
+  ////// executing remote commands to ensure all the servers are registered in the bastion known_hosts file
   provisioner "remote-exec" {
     inline = [
+      "chmod 600 ~/.ssh/*",
       "ssh-keyscan -t rsa -H ${aws_route53_record.webmethods_integration1-a-record.name} >> ~/.ssh/known_hosts",
       "ssh-keyscan -t rsa -H ${aws_instance.webmethods_integration1.private_dns} >> ~/.ssh/known_hosts",
       "ssh-keyscan -t rsa -H ${aws_instance.webmethods_integration1.private_ip} >> ~/.ssh/known_hosts",
@@ -119,8 +129,7 @@ resource "aws_instance" "bastion" {
       "ssh-keyscan -t rsa -H ${aws_route53_record.webmethods_terracotta1-a-record.name} >> ~/.ssh/known_hosts",
       "ssh-keyscan -t rsa -H ${aws_instance.webmethods_terracotta1.private_dns} >> ~/.ssh/known_hosts",
       "ssh-keyscan -t rsa -H ${aws_instance.webmethods_terracotta1.private_ip} >> ~/.ssh/known_hosts",
-      "nohup /bin/bash ~/cce-install-configure.sh > ~/nohup-cce-install-configure.log 2>&1 &",
-      "nohup /bin/bash ~/inventory-install.sh > ~/nohup-inventory-install.log 2>&1 &"
+      "nohup /bin/bash ~/cce-install-configure.sh > ~/nohup-cce-install-configure.log 2>&1"
     ]
 
     connection {
@@ -128,5 +137,10 @@ resource "aws_instance" "bastion" {
       user        = "${var.default_linuxuser}"
       private_key = "${file("${path.cwd}/helper_scripts/id_rsa_bastion")}"
     }
+  }
+
+  ////// executing full provisoning in 1 script
+  provisioner "local-exec" {
+    command = "ssh -o 'StrictHostKeyChecking no' -i ${path.cwd}/helper_scripts/id_rsa_bastion ec2-user@${self.public_ip} '/bin/bash ~/bootstrap-complete.sh'"
   }
 }

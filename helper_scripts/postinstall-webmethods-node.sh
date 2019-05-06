@@ -7,7 +7,7 @@ SPM_INSTALL_DIR=/opt/softwareag
 
 /bin/sh $SPM_INSTALL_DIR/bin/afterInstallAsRoot.sh
 
-echo "Restarting host..."
-shutdown -r now "restarting node post install"
+#echo "Restarting host..."
+#shutdown -r now "restarting node post install"
 
 exit 0;

@@ -34,9 +34,57 @@ ssh-add ./helper_scripts/id_rsa_bastion
 
 This is for the fully automated provisoning from A to Z without having to touch the keyboard during...
 
-TBD
+Simply run the following:
 
-## Manual Steps-By-Steps 
+```bash
+terraform init && terraform apply
+```
+
+This will do the following automatically:
+ - Install all the servers and related artifacts (VPC, security groups, dns, gateways, etc...) on AWS,
+ - Update the OS to latest patches / versiions and other misc initial tasks,
+ - Install webMethods Command Central on a special "Bastion" server,
+ - Configure webMethods Command Central (register licenses, repositories, and specific credentials),
+ - Install multiple products per desired outcome
+
+**Important**: When the Terraform command ends, that means all the infrastructure has been created, and webMethods Command Central has been installed and configured. 
+BUT know that the actual webMethods product provisoning is still under way...
+Only after some extra time (10s of minutes depending on your infrastructure, network, etc...), all will be installed and running as planned.
+
+In the meantime, as soon as Terraform scripts end, you should be able to open wM Command Central:
+```
+open https://$(terraform output bastion-public_ip):8091/cce/web/
+```
+
+After logging in to the Command Central Web UI, you should see provisoning jobs still running, as explained above.
+OR if all done, you should see the various product instances (IS, UM, Terracotta) installed and running.
+
+After the installation is complete, there are couple of setup items to run as root... 
+Let's manually run the post install script on all the newly provisonned servers:
+
+```
+cat ./helper_scripts/postinstall-webmethods-node.sh | ssh -A ec2-user@$(terraform output bastion-public_ip) ssh integration1.webmethods.local
+cat ./helper_scripts/postinstall-webmethods-node.sh | ssh -A ec2-user@$(terraform output bastion-public_ip) ssh terracotta1.webmethods.local
+cat ./helper_scripts/postinstall-webmethods-node.sh | ssh -A ec2-user@$(terraform output bastion-public_ip) ssh universalmessaging1.webmethods.local
+```
+
+and that's it!
+
+**Extra info**:
+
+To administer the newly created servers, you can SSH to the bastion like so:
+```
+ssh -A ec2-user@$(terraform output bastion-public_ip)
+```
+
+From there, you can SSH to any of the servers via their internal DNS name:
+```
+ssh integration1.webmethods.local
+ssh terracotta1.webmethods.local
+ssh universalmessaging1.webmethods.local
+```
+
+## Manual Steps-By-Steps
 
 This is for the semi-manual steps-by-steps...mostly for deeper understanding of the various pieces involved.
 
@@ -150,6 +198,9 @@ scp ./helper_scripts/inventory-setenv.sh ec2-user@$(terraform output bastion-pub
 scp ./helper_scripts/inventory-install.sh ec2-user@$(terraform output bastion-public_ip):~/
 ssh ec2-user@$(terraform output bastion-public_ip) "nohup /bin/bash inventory-install.sh > nohup-inventory-install.log 2>&1 &"
 ```
+
+ssh ec2-user@$(terraform output bastion-public_ip) "/bin/bash ~/inventory-install.sh"
+
 
 NOTE: Be patient...this will take some time...Command Central at work installing multiple servers
 

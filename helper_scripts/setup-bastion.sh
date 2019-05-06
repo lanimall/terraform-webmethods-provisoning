@@ -65,4 +65,4 @@ chown -R ec2-user:ec2-user /opt/softwareag
 echo Defaults:ec2-user \!requiretty >> /etc/sudoers
 
 #write final notification file in tmp
-touch /tmp/intial_provisioning_done
+touch /tmp/initial_provisioning_done
