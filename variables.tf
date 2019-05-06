@@ -82,6 +82,10 @@ variable "webmethods_cc_ssh_user" {
   default = "ec2-user"
 }
 
+variable "webmethods_license_zip_path" {
+  description = "the license zip file that contains all the webmethods licenses that you wish to install"
+}
+
 variable "webmethods_integration_license_key_alias" {
   description = "the license key alias for webmethods integration server"
 }

@@ -30,6 +30,7 @@ Then, add the ssh key to the local agent for easy remote connecting:
 ssh-add ./helper_scripts/id_rsa_bastion
 ```
 
+
 ## Complete Automated Provisoning
 
 This is for the fully automated provisoning from A to Z without having to touch the keyboard during...
@@ -41,11 +42,27 @@ terraform init && terraform apply
 ```
 
 This will do the following automatically:
+ - Ask you about different item related to the installation
  - Install all the servers and related artifacts (VPC, security groups, dns, gateways, etc...) on AWS,
  - Update the OS to latest patches / versiions and other misc initial tasks,
  - Install webMethods Command Central on a special "Bastion" server,
  - Configure webMethods Command Central (register licenses, repositories, and specific credentials),
  - Install multiple products per desired outcome
+
+**Note**:
+In the first step "Ask you about different item related to the installation", it is possible to have all the questions "answered" automatically by setting up the right environment variables in your shell...
+Check [Terraform Docs about Environment Variables](https://www.terraform.io/docs/commands/environment-variables.html#tf_var_name) for more info.
+
+IF you chose to do this, here are the variables you'd need to set for a complete question-less start:
+```
+export TF_VAR_webmethods_cc_password= <password you want to set for command central ui and all spm communications>
+export TF_VAR_webmethods_repo_username= <username to access the empower repo>
+export TF_VAR_webmethods_repo_password= <password for empower user>
+export TF_VAR_webmethods_license_zip_path= <full path to a softwareag license zip file package>
+export TF_VAR_webmethods_integration_license_key_alias= <license key alias for integration server>
+export TF_VAR_webmethods_universalmessaging_license_key_alias= <license key alias for universal messaging>
+export TF_VAR_webmethods_terracotta_license_key_alias= <license key alias for terracotta>
+```
 
 **Important**: When the Terraform command ends, that means all the infrastructure has been created, and webMethods Command Central has been installed and configured. 
 BUT know that the actual webMethods product provisoning is still under way...

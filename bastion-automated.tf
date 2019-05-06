@@ -106,7 +106,7 @@ resource "aws_instance" "bastion" {
   }
 
   provisioner "file" {
-    source      = "~/sag_licenses.zip"
+    source      = "${var.webmethods_license_zip_path}"
     destination = "~/sag_licenses.zip"
 
     connection {
