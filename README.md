@@ -110,19 +110,25 @@ scp ~/sag_licenses.zip ec2-user@$(terraform output bastion-public_ip):~/sag_lice
 
 Once the license file is in position, we can run the Command Central install script by copying it to the bastion server and then running it from there (since the script will run for a little while, I like to use nohup just in case I lose the connectivity to the server...)
 ```
-scp ./helper_scripts/install-cce.sh ec2-user@$(terraform output bastion-public_ip):~/
-ssh ec2-user@$(terraform output bastion-public_ip)
-nohup /bin/bash install-cce.sh > nohup-install-cce.log &
+scp ./helper_scripts/cce-install-configure.sh ec2-user@$(terraform output bastion-public_ip):~/
+ssh ec2-user@$(terraform output bastion-public_ip) "nohup /bin/bash cce-install-configure.sh > nohup-cce-install-configure.log 2>&1 &"
 ```
 
-Alternatively, you could run the script directly from your machine in one shot:
+NOTE: Be patient...this will take some time...
+
+To check how the script is doing:
 ```
-cat ./helper_scripts/install-cce.sh | ssh -A ec2-user@$(terraform output bastion-public_ip)
+ssh -A ec2-user@$(terraform output bastion-public_ip) "tail -f ~/nohup-cce-install-configure.log"
 ```
 
-NOTE: Be patient...this will take 10s of minutes: ansible at work!!!
+At the end, you should see the following in the logs:
+```
+...
+BUILD SUCCESSFUL
+Total time: 14 seconds
+```
 
-At the end, command central should be running and accessible:
+And command central should be running and accessible:
 ```
 open https://$(terraform output bastion-public_ip):8091/cce/web/
 ```
@@ -140,9 +146,24 @@ Once in, you should now have the following configurations applied and working:
 From there, we can now run the inventory provisoning. The following first copy the two inventory scripts to the server...and then run it.
 
 ```
-scp ./helper_scripts/install-inventory.sh ec2-user@$(terraform output bastion-public_ip):~/
-scp ./helper_scripts/cce-inventory.sh ec2-user@$(terraform output bastion-public_ip):~/
-ssh ec2-user@$(terraform output bastion-public_ip)
-nohup /bin/bash inventory-install.sh > nohup-inventory.log &
+scp ./helper_scripts/inventory-setenv.sh ec2-user@$(terraform output bastion-public_ip):~/
+scp ./helper_scripts/inventory-install.sh ec2-user@$(terraform output bastion-public_ip):~/
+ssh ec2-user@$(terraform output bastion-public_ip) "nohup /bin/bash inventory-install.sh > nohup-inventory-install.log 2>&1 &"
 ```
 
+NOTE: Be patient...this will take some time...Command Central at work installing multiple servers
+
+To check how the script is doing:
+```
+ssh -A ec2-user@$(terraform output bastion-public_ip) "tail -f ~/nohup-inventory-install.log"
+```
+
+### Post Install
+
+After the installation, there are couple of setup items to run as root... Let's run the post install script on all the newly provisonned servers:
+
+```
+cat ./helper_scripts/postinstall-webmethods-node.sh | ssh -A ec2-user@$(terraform output bastion-public_ip) ssh integration1.webmethods.local
+cat ./helper_scripts/postinstall-webmethods-node.sh | ssh -A ec2-user@$(terraform output bastion-public_ip) ssh terracotta1.webmethods.local
+cat ./helper_scripts/postinstall-webmethods-node.sh | ssh -A ec2-user@$(terraform output bastion-public_ip) ssh universalmessaging1.webmethods.local
+```
