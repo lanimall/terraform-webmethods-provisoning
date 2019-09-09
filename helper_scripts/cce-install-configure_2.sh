@@ -3,10 +3,22 @@
 #get now date/time in milli precision
 now=`date +%Y%m%d_%H%M%S%3N`
 
+# check dependencies
+if ! type inotifywait &>/dev/null ; then
+	echo "You are missing the inotifywait dependency. Install the package inotify-tools (apt-get install inotify-tools)"
+	exit 1
+fi
+
 # wait until the userdata provisoning is done
-echo "Starting install/configure of SoftwareAG webMethods Command Central"
-while [ ! -f /tmp/initial_provisioning_done ]; do echo "Initial Server provisoning still in progress...Sleeping for 10 seconds."; sleep 10; done
-echo "initial_provisioning_done!!! moving forward...";
+if [ ! -f /tmp/initial_provisioning_done ]; then
+    echo "Initial Server provisoning still in progress...waiting..."
+    inotifywait -e close_write,moved_to,create -m /tmp |
+    while read -r directory events filename; do
+    if [ "$filename" = "initial_provisioning_done" ]; then
+        echo "initial_provisioning_done!!! Starting configure of SoftwareAG webMethods Command Central";
+    fi
+    done
+fi
 
 if [ -f ${HOME}/setenv_cce_devops.sh ]; then
     echo "applying cce devops env to the shell"
@@ -55,18 +67,33 @@ cd ${CCE_DEVOPS_INSTALL_DIR}
 echo "Installing webMethods Command Central (logs are available at ~/nohup-provision_ccserver.log)"
 nohup /bin/bash ./scripts/provision_ccserver.sh $now > ~/nohup-provision_ccserver.log 2>&1 &
 
-# wait until the process is done
-while [ ! -f /tmp/provision_ccserver.done.status_$now  ]; do echo "provision_ccserver still in progress...Sleeping for 10 seconds."; sleep 10; done
-echo "provision_ccserver done!!!";
-##"provision_ccserver.fail.status_$now"
+if [ ! -f /tmp/provision_ccserver.done.status_$now ]; then
+    echo "provision_ccserver still in progress...waiting..."
+    inotifywait -e close_write,moved_to,create -m /tmp |
+    while read -r directory events filename; do
+    if [ "$filename" = "provision_ccserver.done.status_$now" ]; then
+        echo "provision_ccserver done!!!";
+    elif [ "$filename" = "provision_ccserver.fail.status_$now" ]; then
+        echo "ERROR: provision_ccserver failed!!!";
+    fi
+    done
+fi
 
 # Configure command central
 echo "Configuring webMethods Command Central (logs are available at ~/nohup-configure_ccserver.log)"
 nohup /bin/bash ./scripts/configure_ccserver.sh $now > ~/nohup-configure_ccserver.log 2>&1 &
 
-# wait until the process is done
-while [ ! -f /tmp/configure_ccserver.done.status_$now  ]; do echo "configure_ccserver still in progress...Sleeping for 10 seconds."; sleep 10; done
-echo "configure_ccserver done!!!";
+if [ ! -f /tmp/configure_ccserver.done.status_$now ]; then
+    echo "configure_ccserver still in progress...waiting..."
+    inotifywait -e close_write,moved_to,create -m /tmp |
+    while read -r directory events filename; do
+    if [ "$filename" = "configure_ccserver.done.status_$now" ]; then
+        echo "configure_ccserver done!!!";
+    elif [ "$filename" = "configure_ccserver.fail.status_$now" ]; then
+        echo "ERROR: configure_ccserver failed!!!";
+    fi
+    done
+fi
 
 #mark the end of the script
 echo "Installation and Configuration of webMethods Command Central is done."

@@ -30,6 +30,14 @@ Then, add the ssh key to the local agent for easy remote connecting:
 ssh-add ./helper_scripts/id_rsa_bastion
 ```
 
+## webMethods Licensing - Preparing the license package
+
+Before running the provisoning, you'll need to ZIP package all the product licenses you have (or plan on using for this demo) so it can be shipped to the TO-BE provisionned Command Central server.
+
+The Terraform variable "webmethods_license_zip_path" will prompt you for the local path to that license ZIP package.
+When the Terraform provisoning runs, it will copy the license package to the bastion server 
+(FYI: Zip file package will be renamed to "sag_licenses.zip" on the server)
+
 ## Complete Automated Provisoning
 
 This is for the fully automated provisoning from A to Z without having to touch the keyboard during...
@@ -170,16 +178,23 @@ ssh -A $(terraform output amiuser)@$(terraform output bastion-public_ip)
 
 ### Run webMethods Command Central Provisioning
 
-Before running the provisoning, let's add all the product licenses you have (or plan on using for this demo) to the server (Ideally, that would get downloaded automatically by the scripts)
+If all went well, you should see the following files in the HOME of the "amiuser" by running:
+```
+ssh $(terraform output amiuser)@$(terraform output bastion-public_ip) "ls -al"
+```
+ - bootstrap-complete.sh
+ - cce-install-configure.sh
+ - delenv_cce_secrets.sh
+ - inventory-install.sh
+ - inventory-setenv.sh
+ - sag_licenses.zip
+ - setenv_cce_devops.sh
+ - setenv_cce_secrets.sh
 
-Note: The webMethods provisoning script for command central (the ones in [webMethods-devops-provisioning]https://github.com/lanimall/webMethods-devops-provisioning.git expects a zip file named "sag_licenses.zip" in the user home... So let's follow this standard (you could change this if absolutely needed)
-```
-scp ~/sag_licenses.zip $(terraform output amiuser)@$(terraform output bastion-public_ip):~/sag_licenses.zip
-```
 
-Once the license file is in position, we can run the Command Central install script by copying it to the bastion server and then running it from there (since the script will run for a little while, I like to use nohup just in case I lose the connectivity to the server...)
+Now, since all the relevant files are there, we can run the Command Central install scripts (since the script will run for a little while, I like to use nohup just in case I lose the connectivity to the server...)
+
 ```
-scp ./helper_scripts/cce-install-configure.sh $(terraform output amiuser)@$(terraform output bastion-public_ip):~/
 ssh $(terraform output amiuser)@$(terraform output bastion-public_ip) "nohup /bin/bash cce-install-configure.sh > nohup-cce-install-configure.log 2>&1 &"
 ```
 
