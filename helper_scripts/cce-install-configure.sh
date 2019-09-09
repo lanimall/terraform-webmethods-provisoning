@@ -25,7 +25,7 @@ fi
 ## creating target directory for the code
 if [ ! -d ${CCE_DEVOPS_INSTALL_DIR} ]; then
     echo "Directory [${CCE_DEVOPS_INSTALL_DIR}] does not exist - Creating..."
-    sudo mkdir ${CCE_DEVOPS_INSTALL_DIR}
+    sudo mkdir -p ${CCE_DEVOPS_INSTALL_DIR}
 fi
 
 if [ ! -d ${CCE_DEVOPS_INSTALL_DIR} ]; then

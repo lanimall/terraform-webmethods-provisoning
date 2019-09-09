@@ -68,6 +68,11 @@ variable "webmethods_base_path" {
   default     = "/opt/softwareag"
 }
 
+variable "webmethods_provisioning_base_path" {
+  description = "the base install path for the webmethods provisioning project"
+  default     = "/opt/webMethods-devops-provisioning"
+}
+
 variable "webmethods_linux_user" {
   description = "the user for webmethods process and the user that command central will use to connect to the remote servers"
   default     = "saguser"

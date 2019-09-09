@@ -3,9 +3,11 @@ provider "aws" {
 }
 
 locals {
-  common_tags = "${map(
-    "Project", "${var.project_name}-${terraform.workspace}"
-  )}"
+  common_tags = {
+    "Project" = "${var.project_name}-${terraform.workspace}",
+    "Provisioning" = "terraform",
+    "Provisioning_Project" = "terraform-webmethods-provisioning"
+  }
 }
 
 locals {
