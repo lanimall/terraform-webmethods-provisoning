@@ -1,3 +1,11 @@
+output "ami" {
+  value = "${local.base_ami}"
+}
+
+output "amiuser" {
+  value = "${local.base_ami_user}"
+}
+
 //  Output some useful variables for quick SSH access etc.
 output "bastion-public_ip" {
   value = "${aws_instance.bastion.public_ip}"

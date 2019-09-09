@@ -35,16 +35,35 @@ yum install -y java-1.8.0-openjdk-headless
 # Install updates
 yum update -y
 
+##check target user
+getent passwd ${webmethods_linuxuser} > /dev/null
+if [ $? -eq 0 ]; then
+    echo "${webmethods_linuxuser} user exists"
+else
+    echo "${webmethods_linuxuser} user does not exist...creating"
+    useradd ${webmethods_linuxuser}
+    passwd -l ${webmethods_linuxuser}
+fi
+
+## creating target directory if needed
+if [ ! -d ${webmethods_path} ]; then
+    echo "creating install directory"
+    mkdir ${webmethods_path}
+fi
+
 ## format and mount the volume for softwareag installation
 mkfs -t ext4 /dev/xvdf
-mkdir /opt/softwareag
-mount /dev/xvdf /opt/softwareag
-echo /dev/xvdf  /opt/softwareag ext4 defaults,nofail 0 2 >> /etc/fstab
-chown -R ec2-user:ec2-user /opt/softwareag
+mount /dev/xvdf ${webmethods_path}
+echo /dev/xvdf ${webmethods_path} ext4 defaults,nofail 0 2 >> /etc/fstab
 
-# Allow the ec2-user to sudo without a tty, which is required when we run post
+## applying user/group on the target directory
+if [ -d ${webmethods_path} ]; then
+    chown -R ${webmethods_linuxuser}:${webmethods_linuxuser} ${webmethods_path}
+fi
+
+# Allow the default_linuxuser to sudo without a tty, which is required when we run post
 # install scripts on the server.
-echo Defaults:ec2-user \!requiretty >> /etc/sudoers
+echo Defaults:${default_linuxuser} \!requiretty >> /etc/sudoers
 
 #write final notification file in tmp
 touch /tmp/initial_provisioning_done

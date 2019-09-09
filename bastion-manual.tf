@@ -8,19 +8,20 @@ data "template_file" "setup-bastion" {
   template = "${file("./helper_scripts/setup-bastion.sh")}"
   vars {
     availability_zone = "${var.azs}"
+    default_linuxuser = "${local.base_ami_user}"
+    webmethods_linuxuser = "${var.webmethods_linux_user}"
+    webmethods_path = "${var.webmethods_base_path}"
     cc_password="${var.webmethods_cc_password}"
     webmethods_repo_username="${var.webmethods_repo_username}"
     webmethods_repo_password="${var.webmethods_repo_password}"
-    default_linuxuser="${var.default_linuxuser}"
     webmethods_cc_ssh_key_filename="${var.webmethods_cc_ssh_key_filename}"
     webmethods_cc_ssh_key_pwd="${var.webmethods_cc_ssh_key_pwd}"
-    webmethods_cc_ssh_user="${var.webmethods_cc_ssh_user}"
   }
 }
 
 //  Launch configuration for the bastion
 resource "aws_instance" "bastion" {
-  ami                  = "${var.default_ami}"
+  ami                  = "${local.base_ami}"
   instance_type        = "${var.amisize}"
   subnet_id            = "${aws_subnet.public-subnet.id}"
   user_data            = "${data.template_file.setup-bastion.rendered}"
@@ -56,7 +57,7 @@ resource "aws_instance" "bastion" {
 
     connection {
       type        = "ssh"
-      user        = "${var.default_linuxuser}"
+      user        = "${local.base_ami_user}"
       private_key = "${file("${path.cwd}/helper_scripts/id_rsa_bastion")}"
     }
   }
@@ -67,7 +68,7 @@ resource "aws_instance" "bastion" {
 
     connection {
       type        = "ssh"
-      user        = "${var.default_linuxuser}"
+      user        = "${local.base_ami_user}"
       private_key = "${file("${path.cwd}/helper_scripts/id_rsa_bastion")}"
     }
   }
@@ -78,7 +79,7 @@ resource "aws_instance" "bastion" {
 
     connection {
       type        = "ssh"
-      user        = "${var.default_linuxuser}"
+      user        = "${local.base_ami_user}"
       private_key = "${file("${path.cwd}/helper_scripts/id_rsa_bastion")}"
     }
   }
@@ -89,7 +90,7 @@ resource "aws_instance" "bastion" {
 
     connection {
       type        = "ssh"
-      user        = "${var.default_linuxuser}"
+      user        = "${local.base_ami_user}"
       private_key = "${file("${path.cwd}/helper_scripts/id_rsa_bastion")}"
     }
   }
@@ -100,7 +101,7 @@ resource "aws_instance" "bastion" {
 
     connection {
       type        = "ssh"
-      user        = "${var.default_linuxuser}"
+      user        = "${local.base_ami_user}"
       private_key = "${file("${path.cwd}/helper_scripts/id_rsa_bastion")}"
     }
   }
@@ -111,36 +112,8 @@ resource "aws_instance" "bastion" {
 
     connection {
       type        = "ssh"
-      user        = "${var.default_linuxuser}"
+      user        = "${local.base_ami_user}"
       private_key = "${file("${path.cwd}/helper_scripts/id_rsa_bastion")}"
     }
-  }
-
-  ////// executing remote commands to ensure all the servers are registered in the bastion known_hosts file
-  provisioner "remote-exec" {
-    inline = [
-      "chmod 600 ~/.ssh/*",
-      "ssh-keyscan -t rsa -H ${aws_route53_record.webmethods_integration1-a-record.name} >> ~/.ssh/known_hosts",
-      "ssh-keyscan -t rsa -H ${aws_instance.webmethods_integration1.private_dns} >> ~/.ssh/known_hosts",
-      "ssh-keyscan -t rsa -H ${aws_instance.webmethods_integration1.private_ip} >> ~/.ssh/known_hosts",
-      "ssh-keyscan -t rsa -H ${aws_route53_record.webmethods_universalmessaging1-a-record.name} >> ~/.ssh/known_hosts",
-      "ssh-keyscan -t rsa -H ${aws_instance.webmethods_universalmessaging1.private_dns} >> ~/.ssh/known_hosts",
-      "ssh-keyscan -t rsa -H ${aws_instance.webmethods_universalmessaging1.private_ip} >> ~/.ssh/known_hosts",
-      "ssh-keyscan -t rsa -H ${aws_route53_record.webmethods_terracotta1-a-record.name} >> ~/.ssh/known_hosts",
-      "ssh-keyscan -t rsa -H ${aws_instance.webmethods_terracotta1.private_dns} >> ~/.ssh/known_hosts",
-      "ssh-keyscan -t rsa -H ${aws_instance.webmethods_terracotta1.private_ip} >> ~/.ssh/known_hosts",
-      "nohup /bin/bash ~/cce-install-configure.sh > ~/nohup-cce-install-configure.log 2>&1"
-    ]
-
-    connection {
-      type        = "ssh"
-      user        = "${var.default_linuxuser}"
-      private_key = "${file("${path.cwd}/helper_scripts/id_rsa_bastion")}"
-    }
-  }
-
-  ////// executing full provisoning in 1 script
-  provisioner "local-exec" {
-    command = "ssh -o 'StrictHostKeyChecking no' -i ${path.cwd}/helper_scripts/id_rsa_bastion ec2-user@${self.public_ip} '/bin/bash ~/bootstrap-complete.sh'"
   }
 }

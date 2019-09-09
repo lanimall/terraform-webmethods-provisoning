@@ -1,3 +1,13 @@
+variable "project_name" {
+  description = "Project Name"
+  default = "SoftwareAG webmethods Cloud Provisoning"
+}
+
+variable "resources_name_prefix" {
+  description = "Prefix for all resource names"
+  default = "SAG_wM_Terraform_Demo"
+}
+
 variable "webmethods_bastion_key_name" {
   description = "My secure bastion ssh key name"
   default = "webmethodS_BASTION"
@@ -45,12 +55,22 @@ variable "azs" {
 }
 
 variable "default_ami" {
-  default = "ami-034b65115d858cd6d"
+  default = ""
 }
 
-###### USERNAME FOR LINUX AMIS ######
-variable "default_linuxuser" {
-  default = "ec2-user"
+variable "default_ami_user" {
+  description = "The linux user to connect with for the ami"
+  default     = ""
+}
+
+variable "webmethods_base_path" {
+  description = "the base install path for webmethods"
+  default     = "/opt/softwareag"
+}
+
+variable "webmethods_linux_user" {
+  description = "the user for webmethods process and the user that command central will use to connect to the remote servers"
+  default     = "saguser"
 }
 
 ###### COMMAND CENTRAL ADMINISTRATOR CREDENTIAL ######
@@ -75,11 +95,6 @@ variable "webmethods_cc_ssh_key_filename" {
 variable "webmethods_cc_ssh_key_pwd" {
   description = "the password for the ssh key defined by webmethods_cc_ssh_key_path"
   default = ""
-}
-
-variable "webmethods_cc_ssh_user" {
-  description = "the user that command central will use to connectto the remote servers"
-  default = "ec2-user"
 }
 
 variable "webmethods_license_zip_path" {

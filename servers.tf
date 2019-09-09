@@ -8,12 +8,15 @@ data "template_file" "setup-webmethods-node" {
   template = "${file("./helper_scripts/setup-webmethods-node.sh")}"
   vars {
     availability_zone = "${var.azs}"
+    default_linuxuser = "${local.base_ami_user}"
+    webmethods_linuxuser = "${var.webmethods_linux_user}"
+    webmethods_path = "${var.webmethods_base_path}"
   }
 }
 
 //  Launch configuration for an integration node
 resource "aws_instance" "webmethods_integration1" {
-  ami                  = "${var.default_ami}"
+  ami                  = "${local.base_ami}"
   instance_type        = "${var.amisize}"
   subnet_id            = "${aws_subnet.public-subnet.id}"
   user_data            = "${data.template_file.setup-webmethods-node.rendered}"
@@ -44,7 +47,7 @@ resource "aws_instance" "webmethods_integration1" {
 
 //  Launch configuration for an integration node
 resource "aws_instance" "webmethods_universalmessaging1" {
-  ami                  = "${var.default_ami}"
+  ami                  = "${local.base_ami}"
   instance_type        = "${var.amisize}"
   subnet_id            = "${aws_subnet.public-subnet.id}"
   user_data            = "${data.template_file.setup-webmethods-node.rendered}"
@@ -75,7 +78,7 @@ resource "aws_instance" "webmethods_universalmessaging1" {
 
 //  Launch configuration for an integration node
 resource "aws_instance" "webmethods_terracotta1" {
-  ami                  = "${var.default_ami}"
+  ami                  = "${local.base_ami}"
   instance_type        = "${var.amisize}"
   subnet_id            = "${aws_subnet.public-subnet.id}"
   user_data            = "${data.template_file.setup-webmethods-node.rendered}"

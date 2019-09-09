@@ -80,18 +80,23 @@ After the installation is complete, there are couple of setup items to run as ro
 Let's manually run the post install script on all the newly provisonned servers:
 
 ```
-cat ./helper_scripts/postinstall-webmethods-node.sh | ssh -A ec2-user@$(terraform output bastion-public_ip) ssh integration1.webmethods.local
-cat ./helper_scripts/postinstall-webmethods-node.sh | ssh -A ec2-user@$(terraform output bastion-public_ip) ssh terracotta1.webmethods.local
-cat ./helper_scripts/postinstall-webmethods-node.sh | ssh -A ec2-user@$(terraform output bastion-public_ip) ssh universalmessaging1.webmethods.local
+cat ./helper_scripts/postinstall-webmethods-node.sh | ssh -A $(terraform output amiuser)@$(terraform output bastion-public_ip) ssh integration1.webmethods.local
+cat ./helper_scripts/postinstall-webmethods-node.sh | ssh -A $(terraform output amiuser)@$(terraform output bastion-public_ip) ssh terracotta1.webmethods.local
+cat ./helper_scripts/postinstall-webmethods-node.sh | ssh -A $(terraform output amiuser)@$(terraform output bastion-public_ip) ssh universalmessaging1.webmethods.local
 ```
 
-and that's it!
+And that's it!
+
+Integration Server Admin UI is at:
+```
+open http://$(terraform output webmethods_integration1-public_ip):5555
+```
 
 **Extra info**:
 
 To administer the newly created servers, you can SSH to the bastion like so:
 ```
-ssh -A ec2-user@$(terraform output bastion-public_ip)
+ssh -A $(terraform output amiuser)@$(terraform output bastion-public_ip)
 ```
 
 From there, you can SSH to any of the servers via their internal DNS name:
@@ -139,16 +144,16 @@ Let's add the inter-node SSH key to the bastion and the various hosts to the kno
 
 ```
 ssh-keyscan -t rsa -H $(terraform output bastion-public_ip) >> ~/.ssh/known_hosts && \
-ssh -A ec2-user@$(terraform output bastion-public_ip) "ssh-keyscan -t rsa -H $(terraform output webmethods_integration1-private_route53_dns)>> ~/.ssh/known_hosts" && \
-ssh -A ec2-user@$(terraform output bastion-public_ip) "ssh-keyscan -t rsa -H $(terraform output webmethods_integration1-private_dns) >> ~/.ssh/known_hosts" && \
-ssh -A ec2-user@$(terraform output bastion-public_ip) "ssh-keyscan -t rsa -H $(terraform output webmethods_integration1-private_ip) >> ~/.ssh/known_hosts" && \
-ssh -A ec2-user@$(terraform output bastion-public_ip) "ssh-keyscan -t rsa -H $(terraform output webmethods_universalmessaging1-private_route53_dns)>> ~/.ssh/known_hosts" && \
-ssh -A ec2-user@$(terraform output bastion-public_ip) "ssh-keyscan -t rsa -H $(terraform output webmethods_universalmessaging1-private_dns) >> ~/.ssh/known_hosts" && \
-ssh -A ec2-user@$(terraform output bastion-public_ip) "ssh-keyscan -t rsa -H $(terraform output webmethods_universalmessaging1-private_ip) >> ~/.ssh/known_hosts" && \
-ssh -A ec2-user@$(terraform output bastion-public_ip) "ssh-keyscan -t rsa -H $(terraform output webmethods_terracotta1-private_route53_dns)>> ~/.ssh/known_hosts" && \
-ssh -A ec2-user@$(terraform output bastion-public_ip) "ssh-keyscan -t rsa -H $(terraform output webmethods_terracotta1-private_dns) >> ~/.ssh/known_hosts" && \
-ssh -A ec2-user@$(terraform output bastion-public_ip) "ssh-keyscan -t rsa -H $(terraform output webmethods_terracotta1-private_ip) >> ~/.ssh/known_hosts" && \
-scp ./helper_scripts/id_rsa ec2-user@$(terraform output bastion-public_ip):~/.ssh/ && \
+ssh -A $(terraform output amiuser)@$(terraform output bastion-public_ip) "ssh-keyscan -t rsa -H $(terraform output webmethods_integration1-private_route53_dns)>> ~/.ssh/known_hosts" && \
+ssh -A $(terraform output amiuser)@$(terraform output bastion-public_ip) "ssh-keyscan -t rsa -H $(terraform output webmethods_integration1-private_dns) >> ~/.ssh/known_hosts" && \
+ssh -A $(terraform output amiuser)@$(terraform output bastion-public_ip) "ssh-keyscan -t rsa -H $(terraform output webmethods_integration1-private_ip) >> ~/.ssh/known_hosts" && \
+ssh -A $(terraform output amiuser)@$(terraform output bastion-public_ip) "ssh-keyscan -t rsa -H $(terraform output webmethods_universalmessaging1-private_route53_dns)>> ~/.ssh/known_hosts" && \
+ssh -A $(terraform output amiuser)@$(terraform output bastion-public_ip) "ssh-keyscan -t rsa -H $(terraform output webmethods_universalmessaging1-private_dns) >> ~/.ssh/known_hosts" && \
+ssh -A $(terraform output amiuser)@$(terraform output bastion-public_ip) "ssh-keyscan -t rsa -H $(terraform output webmethods_universalmessaging1-private_ip) >> ~/.ssh/known_hosts" && \
+ssh -A $(terraform output amiuser)@$(terraform output bastion-public_ip) "ssh-keyscan -t rsa -H $(terraform output webmethods_terracotta1-private_route53_dns)>> ~/.ssh/known_hosts" && \
+ssh -A $(terraform output amiuser)@$(terraform output bastion-public_ip) "ssh-keyscan -t rsa -H $(terraform output webmethods_terracotta1-private_dns) >> ~/.ssh/known_hosts" && \
+ssh -A $(terraform output amiuser)@$(terraform output bastion-public_ip) "ssh-keyscan -t rsa -H $(terraform output webmethods_terracotta1-private_ip) >> ~/.ssh/known_hosts" && \
+scp ./helper_scripts/id_rsa $(terraform output amiuser)@$(terraform output bastion-public_ip):~/.ssh/ && \
 echo DONE!
 ```
 
@@ -156,34 +161,34 @@ That's it! The infrastructure is ready.
 There are some post-provisoning scripts that are running after the AWS nodes are up...so leave about five minutes for everything to start up fully.
 To be sure, you can check the provisoning logs on each node...eg. on the bastion:
 ```
-ssh -A ec2-user@$(terraform output bastion-public_ip) "tail -f /var/log/user-data.log"
+ssh -A $(terraform output amiuser)@$(terraform output bastion-public_ip) "tail -f /var/log/user-data.log"
 ```
 
 You should also be able to SSH login to the bastion at this point:
 ```
-ssh -A ec2-user@$(terraform output bastion-public_ip)
+ssh -A $(terraform output amiuser)@$(terraform output bastion-public_ip)
 ```
 
-### Run webMethods Command Central Provisoning
+### Run webMethods Command Central Provisioning
 
 Before running the provisoning, let's add all the product licenses you have (or plan on using for this demo) to the server (Ideally, that would get downloaded automatically by the scripts)
 
 Note: The webMethods provisoning script for command central (the ones in [webMethods-devops-provisioning]https://github.com/lanimall/webMethods-devops-provisioning.git expects a zip file named "sag_licenses.zip" in the user home... So let's follow this standard (you could change this if absolutely needed)
 ```
-scp ~/sag_licenses.zip ec2-user@$(terraform output bastion-public_ip):~/sag_licenses.zip
+scp ~/sag_licenses.zip $(terraform output amiuser)@$(terraform output bastion-public_ip):~/sag_licenses.zip
 ```
 
 Once the license file is in position, we can run the Command Central install script by copying it to the bastion server and then running it from there (since the script will run for a little while, I like to use nohup just in case I lose the connectivity to the server...)
 ```
-scp ./helper_scripts/cce-install-configure.sh ec2-user@$(terraform output bastion-public_ip):~/
-ssh ec2-user@$(terraform output bastion-public_ip) "nohup /bin/bash cce-install-configure.sh > nohup-cce-install-configure.log 2>&1 &"
+scp ./helper_scripts/cce-install-configure.sh $(terraform output amiuser)@$(terraform output bastion-public_ip):~/
+ssh $(terraform output amiuser)@$(terraform output bastion-public_ip) "nohup /bin/bash cce-install-configure.sh > nohup-cce-install-configure.log 2>&1 &"
 ```
 
 NOTE: Be patient...this will take some time...
 
 To check how the script is doing:
 ```
-ssh -A ec2-user@$(terraform output bastion-public_ip) "tail -f ~/nohup-cce-install-configure.log"
+ssh -A $(terraform output amiuser)@$(terraform output bastion-public_ip) "tail -f ~/nohup-cce-install-configure.log"
 ```
 
 At the end, you should see the following in the logs:
@@ -206,24 +211,22 @@ Once in, you should now have the following configurations applied and working:
 - Registered licenses
 - Registered passwords
 
-### Run webMethods Products Provisoning
+### Run webMethods Products Provisioning
 
 From there, we can now run the inventory provisoning. The following first copy the two inventory scripts to the server...and then run it.
 
 ```
-scp ./helper_scripts/inventory-setenv.sh ec2-user@$(terraform output bastion-public_ip):~/
-scp ./helper_scripts/inventory-install.sh ec2-user@$(terraform output bastion-public_ip):~/
-ssh ec2-user@$(terraform output bastion-public_ip) "nohup /bin/bash inventory-install.sh > nohup-inventory-install.log 2>&1 &"
+scp ./helper_scripts/inventory-setenv.sh $(terraform output amiuser)@$(terraform output bastion-public_ip):~/
+scp ./helper_scripts/inventory-install.sh $(terraform output amiuser)@$(terraform output bastion-public_ip):~/
+scp ./helper_scripts/bootstrap-complete.sh $(terraform output amiuser)@$(terraform output bastion-public_ip):~/
+ssh $(terraform output amiuser)@$(terraform output bastion-public_ip) "/bin/bash ~/bootstrap-complete.sh"
 ```
-
-ssh ec2-user@$(terraform output bastion-public_ip) "/bin/bash ~/inventory-install.sh"
-
 
 NOTE: Be patient...this will take some time...Command Central at work installing multiple servers
 
 To check how the script is doing:
 ```
-ssh -A ec2-user@$(terraform output bastion-public_ip) "tail -f ~/nohup-inventory-install.log"
+ssh -A $(terraform output amiuser)@$(terraform output bastion-public_ip) "tail -f ~/nohup-inventory-install.log"
 ```
 
 ### Post Install
@@ -231,7 +234,7 @@ ssh -A ec2-user@$(terraform output bastion-public_ip) "tail -f ~/nohup-inventory
 After the installation, there are couple of setup items to run as root... Let's run the post install script on all the newly provisonned servers:
 
 ```
-cat ./helper_scripts/postinstall-webmethods-node.sh | ssh -A ec2-user@$(terraform output bastion-public_ip) ssh integration1.webmethods.local
-cat ./helper_scripts/postinstall-webmethods-node.sh | ssh -A ec2-user@$(terraform output bastion-public_ip) ssh terracotta1.webmethods.local
-cat ./helper_scripts/postinstall-webmethods-node.sh | ssh -A ec2-user@$(terraform output bastion-public_ip) ssh universalmessaging1.webmethods.local
+cat ./helper_scripts/postinstall-webmethods-node.sh | ssh -A $(terraform output amiuser)@$(terraform output bastion-public_ip) ssh integration1.webmethods.local
+cat ./helper_scripts/postinstall-webmethods-node.sh | ssh -A $(terraform output amiuser)@$(terraform output bastion-public_ip) ssh terracotta1.webmethods.local
+cat ./helper_scripts/postinstall-webmethods-node.sh | ssh -A $(terraform output amiuser)@$(terraform output bastion-public_ip) ssh universalmessaging1.webmethods.local
 ```
