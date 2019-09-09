@@ -1,19 +1,19 @@
 #!/usr/bin/env bash
 
 ##before we log everything...
-echo "export CC_PASSWORD=\"${cc_password}\"" > /home/${default_linuxuser}/setenv_cce_init_secrets.sh
-echo "export CC_SAG_REPO_USR=\"${webmethods_repo_username}\"" >> /home/${default_linuxuser}/setenv_cce_init_secrets.sh
-echo "export CC_SAG_REPO_PWD=\"${webmethods_repo_password}\"" >> /home/${default_linuxuser}/setenv_cce_init_secrets.sh
-echo "export CC_SSH_KEY_FILENAME=\"${webmethods_cc_ssh_key_filename}\"" >> /home/${default_linuxuser}/setenv_cce_init_secrets.sh
-echo "export CC_SSH_KEY_PWD=\"${webmethods_cc_ssh_key_pwd}\"" >> /home/${default_linuxuser}/setenv_cce_init_secrets.sh
-echo "export CC_SSH_USER=\"${webmethods_linuxuser}\"" >> /home/${default_linuxuser}/setenv_cce_init_secrets.sh
+echo "export CC_PASSWORD=\"${cc_password}\"" > /home/${default_linuxuser}/setenv_cce_secrets.sh
+echo "export CC_SAG_REPO_USR=\"${webmethods_repo_username}\"" >> /home/${default_linuxuser}/setenv_cce_secrets.sh
+echo "export CC_SAG_REPO_PWD=\"${webmethods_repo_password}\"" >> /home/${default_linuxuser}/setenv_cce_secrets.sh
+echo "export CC_SSH_KEY_FILENAME=\"${webmethods_cc_ssh_key_filename}\"" >> /home/${default_linuxuser}/setenv_cce_secrets.sh
+echo "export CC_SSH_KEY_PWD=\"${webmethods_cc_ssh_key_pwd}\"" >> /home/${default_linuxuser}/setenv_cce_secrets.sh
+echo "export CC_SSH_USER=\"${webmethods_linuxuser}\"" >> /home/${default_linuxuser}/setenv_cce_secrets.sh
 
-echo "export CC_PASSWORD=\"\"" > /home/${default_linuxuser}/setenv_cce_remove_secrets.sh
-echo "export CC_SAG_REPO_USR=\"\"" >> /home/${default_linuxuser}/setenv_cce_remove_secrets.sh
-echo "export CC_SAG_REPO_PWD=\"\"" >> /home/${default_linuxuser}/setenv_cce_remove_secrets.sh
-echo "export CC_SSH_KEY_FILENAME=\"\"" >> /home/${default_linuxuser}/setenv_cce_remove_secrets.sh
-echo "export CC_SSH_KEY_PWD=\"\"" >> /home/${default_linuxuser}/setenv_cce_remove_secrets.sh
-echo "export CC_SSH_USER=\"\"" >> /home/${default_linuxuser}/setenv_cce_remove_secrets.sh
+echo "export CC_PASSWORD=\"\"" > /home/${default_linuxuser}/delenv_cce_secrets.sh
+echo "export CC_SAG_REPO_USR=\"\"" >> /home/${default_linuxuser}/delenv_cce_secrets.sh
+echo "export CC_SAG_REPO_PWD=\"\"" >> /home/${default_linuxuser}/delenv_cce_secrets.sh
+echo "export CC_SSH_KEY_FILENAME=\"\"" >> /home/${default_linuxuser}/delenv_cce_secrets.sh
+echo "export CC_SSH_KEY_PWD=\"\"" >> /home/${default_linuxuser}/delenv_cce_secrets.sh
+echo "export CC_SSH_USER=\"\"" >> /home/${default_linuxuser}/delenv_cce_secrets.sh
 
 echo "export CCE_DEVOPS_INSTALL_DIR=\"${cc_devops_install_dir}\"" >> /home/${default_linuxuser}/setenv_cce_devops.sh
 echo "export CCE_DEVOPS_INSTALL_USER=\"${cc_devops_install_user}\"" >> /home/${default_linuxuser}/setenv_cce_devops.sh

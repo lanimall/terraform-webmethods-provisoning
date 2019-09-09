@@ -30,7 +30,6 @@ Then, add the ssh key to the local agent for easy remote connecting:
 ssh-add ./helper_scripts/id_rsa_bastion
 ```
 
-
 ## Complete Automated Provisoning
 
 This is for the fully automated provisoning from A to Z without having to touch the keyboard during...
@@ -76,7 +75,7 @@ open https://$(terraform output bastion-public_ip):8091/cce/web/
 After logging in to the Command Central Web UI, you should see provisoning jobs still running, as explained above.
 OR if all done, you should see the various product instances (IS, UM, Terracotta) installed and running.
 
-After the installation is complete, there are couple of setup items to run as root... 
+*After the full installation is complete*, there are couple of setup items to run as root.
 Let's manually run the post install script on all the newly provisonned servers:
 
 ```
@@ -106,7 +105,7 @@ ssh terracotta1.webmethods.local
 ssh universalmessaging1.webmethods.local
 ```
 
-## Manual Steps-By-Steps
+## Semi-Manual Provisoning Steps-By-Steps
 
 This is for the semi-manual steps-by-steps...mostly for deeper understanding of the various pieces involved.
 

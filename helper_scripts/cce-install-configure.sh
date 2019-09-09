@@ -4,12 +4,6 @@
 echo "Starting install/configure of SoftwareAG webMethods Command Central"
 while [ ! -f /tmp/initial_provisioning_done ]; do echo "Initial Server provisoning still in progress...Sleeping for 10 seconds."; sleep 10; done
 
-## apply env
-if [ -f ${HOME}/setenv_cce_init_secrets.sh ]; then
-    echo "applying cce secrets to the shell"
-    . ${HOME}/setenv_cce_init_secrets.sh
-fi
-
 if [ -f ${HOME}/setenv_cce_devops.sh ]; then
     echo "applying cce devops env to the shell"
     . ${HOME}/setenv_cce_devops.sh
@@ -39,6 +33,9 @@ sudo /bin/git clone --recursive -b rel103 https://github.com/lanimall/webMethods
 
 ## applying user/group on the target directory
 sudo chown -R ${CCE_DEVOPS_INSTALL_USER}:${CCE_DEVOPS_INSTALL_USER} ${CCE_DEVOPS_INSTALL_DIR}
+
+##copy the provisoning "secrets" in the home of the target CCE_DEVOPS_INSTALL_USER user so the provisoning scripts can use it
+sudo mv ${HOME}/setenv_cce_secrets.sh /home/${CCE_DEVOPS_INSTALL_USER}/.setenv_cce_secrets.sh
 
 echo "Moving to webMethods-devops-provisioning folder"
 cd ${CCE_DEVOPS_INSTALL_DIR}
