@@ -1,6 +1,6 @@
 resource "aws_key_pair" "webmethods_nodes" {
   key_name   = "${var.webmethods_nodes_key_name}"
-  public_key = "${file(var.webmethods_nodes_key_path)}"
+  public_key = "${file(var.webmethods_nodes_key_path_public)}"
 }
 
 //  Create the standard webmethods node userdata script.
@@ -11,6 +11,7 @@ data "template_file" "setup-webmethods-node" {
     default_linuxuser = "${local.base_ami_user}"
     webmethods_linuxuser = "${var.webmethods_linux_user}"
     webmethods_path = "${var.webmethods_base_path}"
+    ssh_public_key = "${file(var.webmethods_nodes_key_path_public)}"
   }
 }
 

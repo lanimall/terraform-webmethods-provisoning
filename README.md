@@ -232,7 +232,7 @@ Once in, you should now have the following configurations applied and working:
 From there, we can now run the inventory provisoning:
 
 ```
-ssh $(terraform output amiuser)@$(terraform output bastion-public_ip) "/bin/bash ~/cce-inventory-install.sh"
+ssh $(terraform output amiuser)@$(terraform output bastion-public_ip) "nohup /bin/bash ~/cce-inventory-install.sh > nohup-cce-inventory-install.log 2>&1 &"
 ```
 
 NOTE: Be patient...this will take some time...Command Central at work installing multiple servers

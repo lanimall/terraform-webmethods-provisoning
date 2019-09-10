@@ -18,31 +18,45 @@ if [ -f ${HOME}/inventory-setenv.sh ]; then
     . ${HOME}/inventory-setenv.sh
 fi
 
+##check target directory
 if [ ! -d ${CCE_DEVOPS_INSTALL_DIR} ]; then
     echo "${CCE_DEVOPS_INSTALL_DIR} does not exists. exiting."
     exit 2;
 fi
 
-echo "Moving to webMethods-devops-provisioning folder"
+##check target user
+getent passwd ${CCE_DEVOPS_INSTALL_USER} > /dev/null
+if [ $? -ne 0 ]; then
+    echo "User [${CCE_DEVOPS_INSTALL_USER}] does not exist. Exiting."
+    exit 2;
+fi
+
+##first move to provisoning folder
 cd ${CCE_DEVOPS_INSTALL_DIR}
 
 # Install Universal Messaging
-echo "Launching Universal Messaging provisoning in the background..."
-export TARGET_HOST=${webmethods_universalmessaging1}
-export LICENSE_KEY_ALIAS1=${webmethods_universalmessaging_license_key_alias}
-nohup /bin/bash ./scripts/provision_um.sh $now > ~/nohup-provision_um.log 2>&1 &
+echo "Launching Universal Messaging provisioning in the background..."
+PROVISION_STACK=um
+/bin/bash ./scripts/provision_setparams.sh ${PROVISION_STACK} "TARGET_HOST" "${webmethods_universalmessaging1}"
+/bin/bash ./scripts/provision_setparams.sh ${PROVISION_STACK} "LICENSE_KEY_ALIAS1" "${webmethods_universalmessaging_license_key_alias}" "true"
+nohup /bin/bash ./scripts/provision_stack.sh ${PROVISION_STACK} $now > ~/nohup-provision_stack_${PROVISION_STACK}.log 2>&1 &
+echo "Universal Messaging provisioning - Check progress at ~/nohup-provision_stack_${PROVISION_STACK}.log"
 
-# Install Terracotta
-echo "Launching Terracotta provisoning in the background..."
-export TARGET_HOST=${webmethods_terracotta1}
-export LICENSE_KEY_ALIAS1=${webmethods_terracotta_license_key_alias}
-nohup /bin/bash ./scripts/provision_tc.sh $now > ~/nohup-provision_tc.log 2>&1 &
+# # Install Terracotta
+# echo "Launching Terracotta provisioning in the background..."
+# PROVISION_STACK=tc
+# /bin/bash ./scripts/provision_setparams.sh ${PROVISION_STACK} "TARGET_HOST" "${webmethods_terracotta1}"
+# /bin/bash ./scripts/provision_setparams.sh ${PROVISION_STACK} "LICENSE_KEY_ALIAS1" "${webmethods_terracotta_license_key_alias}" "true"
+# nohup /bin/bash ./scripts/provision_stack.sh ${PROVISION_STACK} $now > ~/nohup-provision_stack_${PROVISION_STACK}.log 2>&1 &
+# echo "Terracotta provisioning - Check progress at ~/nohup-provision_stack_${PROVISION_STACK}.log"
 
-# Install Integration Server
-echo "Launching Integration Server provisoning in the background..."
-export TARGET_HOST=${webmethods_integration1}
-export LICENSE_KEY_ALIAS1=${webmethods_integration_license_key_alias}
-nohup /bin/bash ./scripts/provision_is_stateless.sh $now > ~/nohup-provision_is_stateless.log 2>&1 &
+# # Install Integration Server
+# echo "Launching Integration Server provisioning in the background..."
+# PROVISION_STACK="is_stateless"
+# /bin/bash ./scripts/provision_setparams.sh ${PROVISION_STACK} "TARGET_HOST" "${webmethods_integration1}"
+# /bin/bash ./scripts/provision_setparams.sh ${PROVISION_STACK} "LICENSE_KEY_ALIAS1" "${webmethods_integration_license_key_alias}" "true"
+# nohup /bin/bash ./scripts/provision_stack.sh ${PROVISION_STACK} $now > ~/nohup-provision_stack_${PROVISION_STACK}.log 2>&1 &
+# echo "Integration Server provisioning - Check progress at ~/nohup-provision_stack_${PROVISION_STACK}.log"
 
 echo "Product provisoning under way..."
 echo "To check current status, check the webMethods Command Central Jobs"

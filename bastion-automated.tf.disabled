@@ -1,6 +1,6 @@
 resource "aws_key_pair" "webmethods_bastion" {
   key_name   = "${var.webmethods_bastion_key_name}"
-  public_key = "${file(var.webmethods_bastion_key_path)}"
+  public_key = "${file(var.webmethods_bastion_key_path_public)}"
 }
 
 //Create the bastion userdata script.
@@ -18,6 +18,7 @@ data "template_file" "setup-bastion" {
     webmethods_cc_ssh_key_pwd="${var.webmethods_cc_ssh_key_pwd}"
     cc_devops_install_dir = "${var.webmethods_provisioning_base_path}"
     cc_devops_install_user = "${var.webmethods_linux_user}"
+    ssh_private_key = "${file(var.webmethods_nodes_key_path_private)}"
   }
 }
 

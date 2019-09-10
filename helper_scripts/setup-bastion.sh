@@ -67,6 +67,14 @@ else
     echo "${webmethods_linuxuser} user does not exist...creating"
     useradd ${webmethods_linuxuser}
     passwd -l ${webmethods_linuxuser}
+
+    mkdir /home/${webmethods_linuxuser}/.ssh
+    chmod 700 /home/${webmethods_linuxuser}/.ssh
+    touch /home/${webmethods_linuxuser}/.ssh/id_rsa
+    chmod 600 /home/${webmethods_linuxuser}/.ssh/id_rsa
+    echo "${ssh_private_key}" > /home/${webmethods_linuxuser}/.ssh/id_rsa
+
+    chown -R ${webmethods_linuxuser}:${webmethods_linuxuser} /home/${webmethods_linuxuser}/.ssh
 fi
 
 ## creating target directory if needed

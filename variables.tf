@@ -13,9 +13,14 @@ variable "webmethods_bastion_key_name" {
   default = "webmethodS_BASTION"
 }
 
-variable "webmethods_bastion_key_path" {
-  description = "My secure bastion ssh key"
+variable "webmethods_bastion_key_path_public" {
+  description = "My secure bastion ssh public key"
   default = "./helper_scripts/id_rsa_bastion.pub"
+}
+
+variable "webmethods_bastion_key_path_private" {
+  description = "My secure bastion ssh private key"
+  default = "./helper_scripts/id_rsa_bastion"
 }
 
 variable "webmethods_nodes_key_name" {
@@ -23,9 +28,14 @@ variable "webmethods_nodes_key_name" {
    default = "webmethodS_NODE"
 }
 
-variable "webmethods_nodes_key_path" {
-  description = "My node to node ssh key"
+variable "webmethods_nodes_key_path_public" {
+  description = "My node to node ssh public key"
    default = "./helper_scripts/id_rsa.pub"
+}
+
+variable "webmethods_nodes_key_path_private" {
+  description = "My node to node ssh private key"
+   default = "./helper_scripts/id_rsa"
 }
 
 variable "amisize" {
