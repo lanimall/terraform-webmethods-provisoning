@@ -178,7 +178,9 @@ ssh -A $(terraform output amiuser)@$(terraform output bastion-public_ip)
 
 ### Run webMethods Command Central Provisioning
 
-If all went well, you should see the following files in the HOME of the "amiuser" by running:
+If all went well, The terraform scripts should have copied the necessary files to the bastion server...and 
+you should see the following files in the HOME of the "amiuser" by running:
+
 ```
 ssh $(terraform output amiuser)@$(terraform output bastion-public_ip) "ls -al"
 ```
@@ -195,7 +197,7 @@ ssh $(terraform output amiuser)@$(terraform output bastion-public_ip) "ls -al"
 Now, since all the relevant files are there, we can run the Command Central install scripts (since the script will run for a little while, I like to use nohup just in case I lose the connectivity to the server...)
 
 ```
-ssh $(terraform output amiuser)@$(terraform output bastion-public_ip) "nohup /bin/bash cce-install-configure.sh > nohup-cce-install-configure.log 2>&1 &"
+ssh -A $(terraform output amiuser)@$(terraform output bastion-public_ip) "nohup /bin/bash cce-install-configure.sh > nohup-cce-install-configure.log 2>&1 &"
 ```
 
 NOTE: Be patient...this will take some time...
@@ -227,13 +229,10 @@ Once in, you should now have the following configurations applied and working:
 
 ### Run webMethods Products Provisioning
 
-From there, we can now run the inventory provisoning. The following first copy the two inventory scripts to the server...and then run it.
+From there, we can now run the inventory provisoning:
 
 ```
-scp ./helper_scripts/inventory-setenv.sh $(terraform output amiuser)@$(terraform output bastion-public_ip):~/
-scp ./helper_scripts/inventory-install.sh $(terraform output amiuser)@$(terraform output bastion-public_ip):~/
-scp ./helper_scripts/bootstrap-complete.sh $(terraform output amiuser)@$(terraform output bastion-public_ip):~/
-ssh $(terraform output amiuser)@$(terraform output bastion-public_ip) "/bin/bash ~/bootstrap-complete.sh"
+ssh $(terraform output amiuser)@$(terraform output bastion-public_ip) "/bin/bash ~/cce-inventory-install.sh"
 ```
 
 NOTE: Be patient...this will take some time...Command Central at work installing multiple servers
