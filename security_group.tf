@@ -23,7 +23,7 @@ resource "aws_security_group" "webmethods-default-vpc" {
   tags = "${merge(
     local.common_tags,
     map(
-      "Name", "webmethods Internal VPC"
+      "Name", "${local.name_prefix}-webmethods Internal VPC"
     )
   )}"
 }
@@ -55,7 +55,7 @@ resource "aws_security_group" "webmethods-public-egress" {
   tags = "${merge(
     local.common_tags,
     map(
-      "Name", "webmethods Public Egress"
+      "Name", "${local.name_prefix}-webmethods Public Egress"
     )
   )}"
 }
@@ -78,7 +78,7 @@ resource "aws_security_group" "webmethods-ssh" {
   tags = "${merge(
     local.common_tags,
     map(
-      "Name", "webmethods SSH Access"
+      "Name", "${local.name_prefix}-webmethods SSH Access"
     )
   )}"
 }
@@ -100,7 +100,7 @@ resource "aws_security_group" "webmethods-commandcentral" {
   tags = "${merge(
     local.common_tags,
     map(
-      "Name", "webmethods Command Central"
+      "Name", "${local.name_prefix}-webmethods Command Central"
     )
   )}"
 }
@@ -150,7 +150,7 @@ resource "aws_security_group" "webmethods-integrationserver" {
   tags = "${merge(
     local.common_tags,
     map(
-      "Name", "webmethods Integration Server"
+      "Name", "${local.name_prefix}-webmethods Integration Server"
     )
   )}"
 }
@@ -235,7 +235,7 @@ resource "aws_security_group" "webmethods-terracotta" {
   tags = "${merge(
     local.common_tags,
     map(
-      "Name", "webmethods Terracotta"
+      "Name", "${local.name_prefix}-webmethods Terracotta"
     )
   )}"
 }
@@ -278,7 +278,7 @@ resource "aws_security_group" "webmethods-universalmessaging" {
   tags = "${merge(
     local.common_tags,
     map(
-      "Name", "webmethods Universal Messaging"
+      "Name", "${local.name_prefix}-webmethods Universal Messaging"
     )
   )}"
 }

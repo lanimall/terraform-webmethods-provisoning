@@ -48,7 +48,7 @@ resource "aws_instance" "bastion" {
   tags = "${merge(
     local.common_tags,
     map(
-      "Name", "webmethods provisoning - Bastion with Command Central"
+      "Name", "${local.name_prefix}-Bastion with Command Central"
     )
   )}"
 
@@ -78,6 +78,17 @@ resource "aws_instance" "bastion" {
   provisioner "file" {
     source      = "${path.cwd}/helper_scripts/inventory-setenv.sh"
     destination = "~/inventory-setenv.sh"
+
+    connection {
+      type        = "ssh"
+      user        = "${local.base_ami_user}"
+      private_key = "${file("${path.cwd}/helper_scripts/id_rsa_bastion")}"
+    }
+  }
+
+  provisioner "file" {
+    source      = "${path.cwd}/helper_scripts/cce-inventory-install.sh"
+    destination = "~/cce-inventory-install.sh"
 
     connection {
       type        = "ssh"

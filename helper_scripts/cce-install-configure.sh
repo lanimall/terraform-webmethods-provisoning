@@ -75,14 +75,11 @@ fi
 if [ "$CMD_INSTALL" = "true" ]; then
     # Install command central
     echo "Installing webMethods Command Central (logs are available at ~/nohup-provision_ccserver.log)"
-    
-    echo "Going into CCE_DEVOPS_INSTALL_DIR folder"
     cd ${CCE_DEVOPS_INSTALL_DIR}
-
     nohup /bin/bash ./scripts/provision_ccserver.sh $now > ~/nohup-provision_ccserver.log 2>&1 &
 
     # wait until the process is done
-    while [ ! -f /tmp/provision_ccserver.done.status_$now  ]; do echo "provision_ccserver still in progress...Sleeping for 10 seconds."; sleep 10; done
+    while [ ! -f /tmp/provision_ccserver.done.status_$now  ]; do echo "provision_ccserver still in progress...Sleeping for 10 seconds. For progress details, check: ~/nohup-provision_ccserver.log"; sleep 10; done
     echo "provision_ccserver done!!!";
     ##"provision_ccserver.fail.status_$now"
 fi
@@ -90,26 +87,17 @@ fi
 if [ "$CMD_CONFIGURE" = "true" ]; then
     # Configure command central
     echo "Configuring webMethods Command Central (logs are available at ~/nohup-configure_ccserver.log)"
-    
-    echo "Going into CCE_DEVOPS_INSTALL_DIR folder"
     cd ${CCE_DEVOPS_INSTALL_DIR}
-
     nohup /bin/bash ./scripts/configure_ccserver.sh $now > ~/nohup-configure_ccserver.log 2>&1 &
 
     # wait until the process is done
-    while [ ! -f /tmp/configure_ccserver.done.status_$now  ]; do echo "configure_ccserver still in progress...Sleeping for 10 seconds."; sleep 10; done
+    while [ ! -f /tmp/configure_ccserver.done.status_$now  ]; do echo "configure_ccserver still in progress...Sleeping for 10 seconds. For progress details, check: ~/nohup-configure_ccserver.log"; sleep 10; done
     echo "configure_ccserver done!!!";
+
+    ## clear sensitive files from CCE_DEVOPS_INSTALL_USER home
+    sudo rm -f /home/${CCE_DEVOPS_INSTALL_USER}/.setenv_cce_secrets.sh
+    sudo rm -f /home/${CCE_DEVOPS_INSTALL_USER}/sag_licenses.zip
 fi
 
 #mark the end of the script
 echo "Installation and Configuration of webMethods Command Central is done."
-
-## clear env
-# if [ -f ${HOME}/setenv_cce_remove_secrets.sh ]; then
-#     . ${HOME}/setenv_cce_remove_secrets.sh
-#     rm -f ${HOME}/setenv_cce_remove_secrets.sh
-# fi
-
-# if [ -f ${HOME}/setenv_cce_init_secrets.sh ]; then
-#     rm -f ${HOME}/setenv_cce_init_secrets.sh
-# fi

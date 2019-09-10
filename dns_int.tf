@@ -10,7 +10,7 @@ resource "aws_route53_zone" "webmethods-internal" {
   tags = "${merge(
     local.common_tags,
     map(
-      "Name", "webmethods Internal DNS"
+      "Name", "${local.name_prefix}-webmethods Internal DNS"
     )
   )}"
 }

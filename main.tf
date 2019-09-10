@@ -6,7 +6,8 @@ locals {
   common_tags = {
     "Project" = "${var.project_name}-${terraform.workspace}",
     "Provisioning" = "terraform",
-    "Provisioning_Project" = "terraform-webmethods-provisioning"
+    "Provisioning_Project" = "terraform-webmethods-provisioning",
+    "Scheduler" = "NO_SHUTDOWN"
   }
 }
 

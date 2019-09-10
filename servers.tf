@@ -40,7 +40,7 @@ resource "aws_instance" "webmethods_integration1" {
   tags = "${merge(
     local.common_tags,
     map(
-      "Name", "webmethods provisoning - integration server 1"
+      "Name", "${local.name_prefix}-integration server 1"
     )
   )}"
 }
@@ -71,7 +71,7 @@ resource "aws_instance" "webmethods_universalmessaging1" {
   tags = "${merge(
     local.common_tags,
     map(
-      "Name", "webmethods provisoning - webmethods universal messaging server 1"
+      "Name", "${local.name_prefix}-webmethods universal messaging server 1"
     )
   )}"
 }
@@ -102,7 +102,7 @@ resource "aws_instance" "webmethods_terracotta1" {
   tags = "${merge(
     local.common_tags,
     map(
-      "Name", "webmethods provisoning - terracotta caching server 1"
+      "Name", "${local.name_prefix}-terracotta caching server 1"
     )
   )}"
 }

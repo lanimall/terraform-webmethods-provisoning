@@ -9,7 +9,7 @@ resource "aws_vpc" "webmethods" {
   tags = "${merge(
     local.common_tags,
     map(
-      "Name", "webmethods VPC"
+      "Name", "${local.name_prefix}-webmethods VPC"
     )
   )}"
 }
@@ -22,7 +22,7 @@ resource "aws_internet_gateway" "webmethods" {
   tags = "${merge(
     local.common_tags,
     map(
-      "Name", "webmethods IGW"
+      "Name", "${local.name_prefix}-webmethods IGW"
     )
   )}"
 }
@@ -39,7 +39,7 @@ resource "aws_subnet" "public-subnet" {
   tags = "${merge(
     local.common_tags,
     map(
-      "Name", "webmethods Public Subnet"
+      "Name", "${local.name_prefix}-webmethods Public Subnet"
     )
   )}"
 }
@@ -57,7 +57,7 @@ resource "aws_route_table" "public" {
   tags = "${merge(
     local.common_tags,
     map(
-      "Name", "webmethods Public Route Table"
+      "Name", "${local.name_prefix}-webmethods Public Route Table"
     )
   )}"
 }
