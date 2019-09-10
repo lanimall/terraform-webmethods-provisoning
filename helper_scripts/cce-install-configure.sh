@@ -31,6 +31,8 @@ if [ "x$CMD_CONFIGURE" = "x" ]; then
 fi
 
 if [ "$CMD_PREREQS" = "true" ]; then  
+    echo "Setting up pre-requisites for Command Central provisoning..."
+
     ##check target user
     getent passwd ${CCE_DEVOPS_INSTALL_USER} > /dev/null
     if [ $? -ne 0 ]; then
