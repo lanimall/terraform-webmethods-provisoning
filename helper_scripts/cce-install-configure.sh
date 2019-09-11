@@ -5,7 +5,7 @@ now=`date +%Y%m%d_%H%M%S%3N`
 
 # wait until the userdata provisoning is done
 echo "Starting install/configure of SoftwareAG webMethods Command Central"
-while [ ! -f /tmp/initial_provisioning_done ]; do echo "Initial Server provisoning still in progress...Sleeping for 10 seconds."; sleep 10; done
+while [ ! -f /tmp/initial_provisioning_done ]; do echo "Initial Server provisoning still in progress...Sleeping for 10 seconds. For progress details, check: /var/log/user-data.log"; sleep 10; done
 echo "initial_provisioning_done!!! moving forward...";
 
 if [ -f ${HOME}/setenv_cce_devops.sh ]; then

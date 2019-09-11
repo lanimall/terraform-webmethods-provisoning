@@ -147,38 +147,23 @@ Couple of output variables that you can reference later using notation  'terrafo
 
 ### Setup Connectivity to the infrastructure
 
-Let's add the inter-node SSH key to the bastion and the various hosts to the known-host on the bastion:
-
-```
-ssh-keyscan -t rsa -H $(terraform output bastion-public_ip) >> ~/.ssh/known_hosts && \
-ssh -A $(terraform output amiuser)@$(terraform output bastion-public_ip) "ssh-keyscan -t rsa -H $(terraform output webmethods_integration1-private_route53_dns)>> ~/.ssh/known_hosts" && \
-ssh -A $(terraform output amiuser)@$(terraform output bastion-public_ip) "ssh-keyscan -t rsa -H $(terraform output webmethods_integration1-private_dns) >> ~/.ssh/known_hosts" && \
-ssh -A $(terraform output amiuser)@$(terraform output bastion-public_ip) "ssh-keyscan -t rsa -H $(terraform output webmethods_integration1-private_ip) >> ~/.ssh/known_hosts" && \
-ssh -A $(terraform output amiuser)@$(terraform output bastion-public_ip) "ssh-keyscan -t rsa -H $(terraform output webmethods_universalmessaging1-private_route53_dns)>> ~/.ssh/known_hosts" && \
-ssh -A $(terraform output amiuser)@$(terraform output bastion-public_ip) "ssh-keyscan -t rsa -H $(terraform output webmethods_universalmessaging1-private_dns) >> ~/.ssh/known_hosts" && \
-ssh -A $(terraform output amiuser)@$(terraform output bastion-public_ip) "ssh-keyscan -t rsa -H $(terraform output webmethods_universalmessaging1-private_ip) >> ~/.ssh/known_hosts" && \
-ssh -A $(terraform output amiuser)@$(terraform output bastion-public_ip) "ssh-keyscan -t rsa -H $(terraform output webmethods_terracotta1-private_route53_dns)>> ~/.ssh/known_hosts" && \
-ssh -A $(terraform output amiuser)@$(terraform output bastion-public_ip) "ssh-keyscan -t rsa -H $(terraform output webmethods_terracotta1-private_dns) >> ~/.ssh/known_hosts" && \
-ssh -A $(terraform output amiuser)@$(terraform output bastion-public_ip) "ssh-keyscan -t rsa -H $(terraform output webmethods_terracotta1-private_ip) >> ~/.ssh/known_hosts" && \
-scp ./helper_scripts/id_rsa $(terraform output amiuser)@$(terraform output bastion-public_ip):~/.ssh/ && \
-echo DONE!
-```
-
-That's it! The infrastructure is ready.
-There are some post-provisoning scripts that are running after the AWS nodes are up...so leave about five minutes for everything to start up fully.
-To be sure, you can check the provisoning logs on each node...eg. on the bastion:
-```
-ssh -A $(terraform output amiuser)@$(terraform output bastion-public_ip) "tail -f /var/log/user-data.log"
-```
-
 You should also be able to SSH login to the bastion at this point:
 ```
 ssh -A $(terraform output amiuser)@$(terraform output bastion-public_ip)
 ```
 
+NOTE: Even though you can SSH to the server, there may be some scripts that are still running in the background after the server nodes are up...
+
+You can check the provisoning logs on each node...eg. on the bastion:
+```
+ssh -A $(terraform output amiuser)@$(terraform output bastion-public_ip) "tail -f /var/log/user-data.log"
+```
+
+This is for info only...you don't have to wait to move to the next step...
+
 ### Run webMethods Command Central Provisioning
 
-If all went well, The terraform scripts should have copied the necessary files to the bastion server...and 
+At this point, the terraform scripts should have copied the necessary files to the bastion server...and 
 you should see the following files in the HOME of the "amiuser" by running:
 
 ```
@@ -207,11 +192,13 @@ To check how the script is doing:
 ssh -A $(terraform output amiuser)@$(terraform output bastion-public_ip) "tail -f ~/nohup-cce-install-configure.log"
 ```
 
+NOTE:
+If you see the following in the progress output: "Initial Server provisoning still in progress...Sleeping for 10 seconds" it means that the server is still being "provisionned" and the script is built to wait for the provioning to be complete before moving forward.
+
 At the end, you should see the following in the logs:
 ```
 ...
-BUILD SUCCESSFUL
-Total time: 14 seconds
+Installation and Configuration of webMethods Command Central is done.
 ```
 
 And command central should be running and accessible:

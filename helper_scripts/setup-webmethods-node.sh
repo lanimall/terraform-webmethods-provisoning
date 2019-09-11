@@ -29,12 +29,6 @@ log_group_name = /var/log/user-data.log
 file = /var/log/user-data.log
 EOF
 
-# Install java
-yum install -y java-1.8.0-openjdk-headless
-
-# Install updates
-yum update -y
-
 ##check target user
 getent passwd ${webmethods_linuxuser} > /dev/null
 if [ $? -eq 0 ]; then
@@ -72,6 +66,12 @@ fi
 # Allow the default_linuxuser to sudo without a tty, which is required when we run post
 # install scripts on the server.
 echo Defaults:${default_linuxuser} \!requiretty >> /etc/sudoers
+
+# Install java
+yum install -y java-1.8.0-openjdk-headless
+
+# Install updates
+yum update -y
 
 #write final notification file in tmp
 touch /tmp/initial_provisioning_done

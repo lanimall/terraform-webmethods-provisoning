@@ -19,6 +19,12 @@ data "template_file" "setup-bastion" {
     cc_devops_install_dir = "${var.webmethods_provisioning_base_path}"
     cc_devops_install_user = "${var.webmethods_linux_user}"
     ssh_private_key = "${file(var.webmethods_nodes_key_path_private)}"
+    ssh_known_host1_dnsname = "${aws_route53_record.webmethods_integration1-a-record.name}"
+    ssh_known_host2_dnsname = "${aws_route53_record.webmethods_universalmessaging1-a-record.name}"
+    ssh_known_host3_dnsname = "${aws_route53_record.webmethods_terracotta1-a-record.name}"
+    ssh_known_host1_ip = "${aws_instance.webmethods_integration1.private_ip}"
+    ssh_known_host2_ip = "${aws_instance.webmethods_universalmessaging1.private_ip}"
+    ssh_known_host3_ip = "${aws_instance.webmethods_terracotta1.private_ip}"
   }
 }
 
@@ -54,17 +60,6 @@ resource "aws_instance" "bastion" {
   )}"
 
   ////// copying all the files we need on the bastion server
-  provisioner "file" {
-    source      = "${path.cwd}/helper_scripts/id_rsa"
-    destination = "~/.ssh/id_rsa"
-
-    connection {
-      type        = "ssh"
-      user        = "${local.base_ami_user}"
-      private_key = "${file("${path.cwd}/helper_scripts/id_rsa_bastion")}"
-    }
-  }
-
   provisioner "file" {
     source      = "${path.cwd}/helper_scripts/cce-install-configure.sh"
     destination = "~/cce-install-configure.sh"
