@@ -51,13 +51,23 @@ EOF
 yum install -y https://dl.fedoraproject.org/pub/epel/epel-release-latest-7.noarch.rpm
 
 # Install dev tools.
-yum install -y "@Development Tools" java-1.8.0-openjdk-headless
+yum install -y "@Development Tools" java-1.8.0-openjdk-headless bind-utils
 
 # Install inotify tool to be able to listen to file (useful to know when to start next phases based on file updates)
 yum install -y inotify-tools
 
-# Install updates
-yum update -y
+function check_dns(){
+    COUNTER=0
+    DNS_RECORD=$1
+    DNS_MAXTRIES=$2
+    DNS_INTERVAL=$3
+    while [ "x$(dig +short -t A $DNS_RECORD.)" = "x" ] && [ $COUNTER -lt $DNS_MAXTRIES ]; do
+        let COUNTER=COUNTER+1
+        echo "Try $COUNTER - trying again in $DNS_INTERVAL sec"
+        sleep $DNS_INTERVAL
+    done
+    dnscheck="$(dig +short -t A $DNS_RECORD.)"
+}
 
 ##check target user
 getent passwd ${webmethods_linuxuser} > /dev/null
@@ -68,11 +78,43 @@ else
     useradd ${webmethods_linuxuser}
     passwd -l ${webmethods_linuxuser}
 
+    ##add private key to the webmethods_linuxuser home
     mkdir /home/${webmethods_linuxuser}/.ssh
     chmod 700 /home/${webmethods_linuxuser}/.ssh
     touch /home/${webmethods_linuxuser}/.ssh/id_rsa
     chmod 600 /home/${webmethods_linuxuser}/.ssh/id_rsa
     echo "${ssh_private_key}" > /home/${webmethods_linuxuser}/.ssh/id_rsa
+
+    ##add known hosts to the webmethods_linuxuser home
+    check_dns ${ssh_known_host1_dnsname} 10 5
+    if [ "x$dnscheck" != "x" ]; then
+        ssh-keyscan -t rsa -H ${ssh_known_host1_dnsname} >> /home/${webmethods_linuxuser}/.ssh/known_hosts
+    fi
+
+    check_dns ${ssh_known_host2_dnsname} 10 5
+    if [ "x$dnscheck" != "x" ]; then
+        ssh-keyscan -t rsa -H ${ssh_known_host2_dnsname} >> /home/${webmethods_linuxuser}/.ssh/known_hosts
+    fi
+
+    check_dns ${ssh_known_host3_dnsname} 10 5
+    if [ "x$dnscheck" != "x" ]; then
+        ssh-keyscan -t rsa -H ${ssh_known_host3_dnsname} >> /home/${webmethods_linuxuser}/.ssh/known_hosts
+    fi
+
+    check_dns ${ssh_known_host1_ip} 10 5
+    if [ "x$dnscheck" != "x" ]; then
+        ssh-keyscan -t rsa -H ${ssh_known_host1_ip} >> /home/${webmethods_linuxuser}/.ssh/known_hosts
+    fi
+
+    check_dns ${ssh_known_host2_ip} 10 5
+    if [ "x$dnscheck" != "x" ]; then
+        ssh-keyscan -t rsa -H ${ssh_known_host2_ip} >> /home/${webmethods_linuxuser}/.ssh/known_hosts
+    fi
+
+    check_dns ${ssh_known_host3_ip} 10 5
+    if [ "x$dnscheck" != "x" ]; then
+        ssh-keyscan -t rsa -H ${ssh_known_host3_ip} >> /home/${webmethods_linuxuser}/.ssh/known_hosts
+    fi
 
     chown -R ${webmethods_linuxuser}:${webmethods_linuxuser} /home/${webmethods_linuxuser}/.ssh
 fi
@@ -96,6 +138,9 @@ fi
 # Allow the default_linuxuser to sudo without a tty, which is required when we run post
 # install scripts on the server.
 echo Defaults:${default_linuxuser} \!requiretty >> /etc/sudoers
+
+# Install updates
+yum update -y
 
 #write final notification file in tmp
 touch /tmp/initial_provisioning_done
