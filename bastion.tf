@@ -3,6 +3,16 @@ resource "aws_key_pair" "webmethods_bastion" {
   public_key = "${file(var.webmethods_bastion_key_path_public)}"
 }
 
+resource "random_id" "bastionserver" {
+  keepers = {
+    # Generate a new id each time we recreate
+    execute_cce_install = "${var.execute_cce_install}"
+    execute_cce_config = "${var.execute_cce_config}"
+    execute_cce_products_install = "${var.execute_cce_products_install}"
+  }
+  byte_length = 8
+}
+
 //Create the bastion userdata script.
 data "template_file" "setup-bastion" {
   template = "${file("./helper_scripts/setup-bastion.sh")}"
@@ -28,6 +38,40 @@ data "template_file" "setup-bastion" {
   }
 }
 
+data "template_file" "inventory" {
+  template = "${file("${path.cwd}/helper_scripts/inventory.tpl")}"
+  vars {
+    webmethods_integration1 = "${aws_route53_record.webmethods_integration1-a-record.name}"
+    webmethods_integration_license_key_alias= "${var.webmethods_integration_license_key_alias}"
+
+    webmethods_universalmessaging1 = "${aws_route53_record.webmethods_universalmessaging1-a-record.name}"
+    webmethods_universalmessaging_license_key_alias = "${var.webmethods_universalmessaging_license_key_alias}"
+
+    webmethods_terracotta1 = "${aws_route53_record.webmethods_terracotta1-a-record.name}"
+    webmethods_terracotta_license_key_alias = "${var.webmethods_terracotta_license_key_alias}"
+  }
+}
+
+resource "local_file" "inventory" {
+  content     = "${data.template_file.inventory.rendered}"
+  filename = "${path.cwd}/helper_scripts/tfexpanded_inventory-setenv.sh"
+}
+
+data "template_file" "bootstrap" {
+  template = "${file("${path.cwd}/helper_scripts/bootstrap.sh")}"
+  vars {
+    execute_cce_install = "${random_id.bastionserver.keepers.execute_cce_install}"
+    execute_cce_config = "${random_id.bastionserver.keepers.execute_cce_config}"
+    execute_cce_products_install = "${random_id.bastionserver.keepers.execute_cce_products_install}"
+    unique_id = "${random_id.bastionserver.hex}"
+  }
+}
+
+resource "local_file" "bootstrap" {
+  content     = "${data.template_file.bootstrap.rendered}"
+  filename = "${path.cwd}/helper_scripts/tfexpanded_bootstrap.sh"
+}
+
 //  Launch configuration for the bastion
 resource "aws_instance" "bastion" {
   ami                  = "${local.base_ami}"
@@ -36,6 +80,14 @@ resource "aws_instance" "bastion" {
   user_data            = "${data.template_file.setup-bastion.rendered}"
   key_name            = "${aws_key_pair.webmethods_bastion.id}"
   associate_public_ip_address = "true"
+
+  depends_on = [
+    "data.template_file.inventory",
+    "local_file.inventory",
+    "data.template_file.bootstrap",
+    "local_file.bootstrap",
+    "random_id.bastionserver"
+  ]
 
   vpc_security_group_ids = [
     "${aws_security_group.webmethods-default-vpc.id}",
@@ -72,17 +124,6 @@ resource "aws_instance" "bastion" {
   }
 
   provisioner "file" {
-    source      = "${path.cwd}/helper_scripts/inventory-setenv.sh"
-    destination = "~/inventory-setenv.sh"
-
-    connection {
-      type        = "ssh"
-      user        = "${local.base_ami_user}"
-      private_key = "${file("${path.cwd}/helper_scripts/id_rsa_bastion")}"
-    }
-  }
-
-  provisioner "file" {
     source      = "${path.cwd}/helper_scripts/cce-inventory-install.sh"
     destination = "~/cce-inventory-install.sh"
 
@@ -94,8 +135,8 @@ resource "aws_instance" "bastion" {
   }
 
   provisioner "file" {
-    source      = "${path.cwd}/helper_scripts/inventory-install.sh"
-    destination = "~/inventory-install.sh"
+    source      = "${path.cwd}/helper_scripts/common.sh"
+    destination = "~/common.sh"
 
     connection {
       type        = "ssh"
@@ -105,8 +146,19 @@ resource "aws_instance" "bastion" {
   }
 
   provisioner "file" {
-    source      = "${path.cwd}/helper_scripts/bootstrap-complete.sh"
-    destination = "~/bootstrap-complete.sh"
+    source      = "${path.cwd}/helper_scripts/tfexpanded_inventory-setenv.sh"
+    destination = "~/inventory-setenv.sh"
+
+    connection {
+      type        = "ssh"
+      user        = "${local.base_ami_user}"
+      private_key = "${file("${path.cwd}/helper_scripts/id_rsa_bastion")}"
+    }
+  }
+
+  provisioner "file" {
+    source      = "${path.cwd}/helper_scripts/tfexpanded_bootstrap.sh"
+    destination = "~/bootstrap.sh"
 
     connection {
       type        = "ssh"
@@ -124,5 +176,24 @@ resource "aws_instance" "bastion" {
       user        = "${local.base_ami_user}"
       private_key = "${file("${path.cwd}/helper_scripts/id_rsa_bastion")}"
     }
+  }
+
+  ////// executing remote commands to ensure all the servers are registered in the bastion known_hosts file
+  //NOTE: not using this because it does not execute for some reasons...
+  //provisioner "remote-exec" {
+  //  inline = [
+  //    "/bin/bash ~/bootstrap.sh"
+  //  ]
+  //
+  //  connection {
+  //    type        = "ssh"
+  //    user        = "${local.base_ami_user}"
+  //    private_key = "${file("${path.cwd}/helper_scripts/id_rsa_bastion")}"
+  //  }
+  //}
+
+  ////// executing full provisoning in 1 script
+  provisioner "local-exec" {
+    command = "ssh -o 'StrictHostKeyChecking no' -i ${path.cwd}/helper_scripts/id_rsa_bastion ${local.base_ami_user}@${self.public_ip} '/bin/bash ~/bootstrap.sh'"
   }
 }

@@ -1,22 +1,23 @@
 #!/usr/bin/env bash
 
-#get now date/time in milli precision
-now=`date +%Y%m%d_%H%M%S%3N`
+##get the params passed-in
+CMD_PREREQS=$1
+CMD_INSTALL=$2
+CMD_CONFIGURE=$3
+CMD_UNIQUE_ID=$4
 
-# wait until the userdata provisoning is done
+## apply common functions
+if [ -f ${HOME}/common.sh ]; then
+    . ${HOME}/common.sh
+fi
+
 echo "Starting install/configure of SoftwareAG webMethods Command Central"
-while [ ! -f /tmp/initial_provisioning_done ]; do echo "Initial Server provisoning still in progress...Sleeping for 10 seconds. For progress details, check: /var/log/user-data.log"; sleep 10; done
-echo "initial_provisioning_done!!! moving forward...";
+wait_server_provisoning_done $CMD_UNIQUE_ID
 
 if [ -f ${HOME}/setenv_cce_devops.sh ]; then
     echo "applying cce devops env to the shell"
     . ${HOME}/setenv_cce_devops.sh
 fi
-
-##get the params passed-in
-CMD_PREREQS=$1
-CMD_INSTALL=$2
-CMD_CONFIGURE=$3
 
 if [ "x$CMD_PREREQS" = "x" ]; then
     CMD_PREREQS="true"
@@ -70,34 +71,38 @@ if [ "$CMD_PREREQS" = "true" ]; then
 
     ##move the product licenses package in the home of the target CCE_DEVOPS_INSTALL_USER user so the provisoning scripts can use it
     sudo cp -f ${HOME}/sag_licenses.zip /home/${CCE_DEVOPS_INSTALL_USER}/
+
+    echo "Pre-requisites for Command Central provisoning is done."
 fi
 
 if [ "$CMD_INSTALL" = "true" ]; then
     # Install command central
-    echo "Installing webMethods Command Central (logs are available at ~/nohup-provision_ccserver.log)"
+    echo "Installing webMethods Command Central (logs are available at ~/nohup-wmprovisioning-provision_ccserver.log)"
+    
     cd ${CCE_DEVOPS_INSTALL_DIR}
-    nohup /bin/bash ./scripts/provision_ccserver.sh $now > ~/nohup-provision_ccserver.log 2>&1 &
+    nohup /bin/bash ./scripts/provision_ccserver.sh $CMD_UNIQUE_ID > ~/nohup-wmprovisioning-provision_ccserver.log 2>&1 &
 
-    # wait until the process is done
-    while [ ! -f /tmp/provision_ccserver.done.status_$now  ]; do echo "provision_ccserver still in progress...Sleeping for 10 seconds. For progress details, check: ~/nohup-provision_ccserver.log"; sleep 10; done
-    echo "provision_ccserver done!!!";
-    ##"provision_ccserver.fail.status_$now"
+    #wait for installation
+    wait_cce_installation_done $CMD_UNIQUE_ID
+    echo "Installation webMethods Command Central is done."
 fi
 
 if [ "$CMD_CONFIGURE" = "true" ]; then
     # Configure command central
-    echo "Configuring webMethods Command Central (logs are available at ~/nohup-configure_ccserver.log)"
+    echo "Configuring webMethods Command Central (logs are available at ~/nohup-wmprovisioning-configure_ccserver.log)"
+    wait_cce_installation_done $CMD_UNIQUE_ID
+    
     cd ${CCE_DEVOPS_INSTALL_DIR}
-    nohup /bin/bash ./scripts/configure_ccserver.sh $now > ~/nohup-configure_ccserver.log 2>&1 &
-
-    # wait until the process is done
-    while [ ! -f /tmp/configure_ccserver.done.status_$now  ]; do echo "configure_ccserver still in progress...Sleeping for 10 seconds. For progress details, check: ~/nohup-configure_ccserver.log"; sleep 10; done
-    echo "configure_ccserver done!!!";
+    nohup /bin/bash ./scripts/configure_ccserver.sh $CMD_UNIQUE_ID > ~/nohup-wmprovisioning-configure_ccserver.log 2>&1 &
 
     ## clear sensitive files from CCE_DEVOPS_INSTALL_USER home
     sudo rm -f /home/${CCE_DEVOPS_INSTALL_USER}/.setenv_cce_secrets.sh
     sudo rm -f /home/${CCE_DEVOPS_INSTALL_USER}/sag_licenses.zip
+
+    #wait for configuration
+    wait_cce_configuration_done $CMD_UNIQUE_ID
+    echo "Configuration of webMethods Command Central is done."
 fi
 
 #mark the end of the script
-echo "Installation and Configuration of webMethods Command Central is done."
+echo "End"

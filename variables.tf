@@ -8,6 +8,18 @@ variable "resources_name_prefix" {
   default = "SAG_wM_Terraform_Demo"
 }
 
+variable "execute_cce_install" {
+  description = "If set to true, execute CCE installation on the bastion"
+}
+
+variable "execute_cce_config" {
+  description = "If set to true, execute CCE configuration on the bastion"
+}
+
+variable "execute_cce_products_install" {
+  description = "If set to true, execute CCE's remote provisoning of wM products onto the varisou servers"
+}
+
 variable "webmethods_bastion_key_name" {
   description = "My secure bastion ssh key name"
   default = "webmethodS_BASTION"
