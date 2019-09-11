@@ -34,7 +34,7 @@ fi
 ##first move to provisoning folder
 cd ${CCE_DEVOPS_INSTALL_DIR}
 
-# Install Universal Messaging
+## Install Universal Messaging
 echo "Launching Universal Messaging provisioning in the background..."
 PROVISION_STACK=um
 /bin/bash ./scripts/provision_setparams.sh ${PROVISION_STACK} "TARGET_HOST" "${webmethods_universalmessaging1}"
@@ -42,21 +42,24 @@ PROVISION_STACK=um
 nohup /bin/bash ./scripts/provision_stack.sh ${PROVISION_STACK} $now > ~/nohup-provision_stack_${PROVISION_STACK}.log 2>&1 &
 echo "Universal Messaging provisioning - Check progress at ~/nohup-provision_stack_${PROVISION_STACK}.log"
 
-# # Install Terracotta
-# echo "Launching Terracotta provisioning in the background..."
-# PROVISION_STACK=tc
-# /bin/bash ./scripts/provision_setparams.sh ${PROVISION_STACK} "TARGET_HOST" "${webmethods_terracotta1}"
-# /bin/bash ./scripts/provision_setparams.sh ${PROVISION_STACK} "LICENSE_KEY_ALIAS1" "${webmethods_terracotta_license_key_alias}" "true"
-# nohup /bin/bash ./scripts/provision_stack.sh ${PROVISION_STACK} $now > ~/nohup-provision_stack_${PROVISION_STACK}.log 2>&1 &
-# echo "Terracotta provisioning - Check progress at ~/nohup-provision_stack_${PROVISION_STACK}.log"
+## Install Terracotta
+echo "Launching Terracotta provisioning in the background..."
+PROVISION_STACK=tc
+/bin/bash ./scripts/provision_setparams.sh ${PROVISION_STACK} "TARGET_HOST" "${webmethods_terracotta1}"
+/bin/bash ./scripts/provision_setparams.sh ${PROVISION_STACK} "LICENSE_KEY_ALIAS1" "${webmethods_terracotta_license_key_alias}" "true"
+nohup /bin/bash ./scripts/provision_stack.sh ${PROVISION_STACK} $now > ~/nohup-provision_stack_${PROVISION_STACK}.log 2>&1 &
+echo "Terracotta provisioning - Check progress at ~/nohup-provision_stack_${PROVISION_STACK}.log"
 
-# # Install Integration Server
-# echo "Launching Integration Server provisioning in the background..."
-# PROVISION_STACK="is_stateless"
-# /bin/bash ./scripts/provision_setparams.sh ${PROVISION_STACK} "TARGET_HOST" "${webmethods_integration1}"
-# /bin/bash ./scripts/provision_setparams.sh ${PROVISION_STACK} "LICENSE_KEY_ALIAS1" "${webmethods_integration_license_key_alias}" "true"
-# nohup /bin/bash ./scripts/provision_stack.sh ${PROVISION_STACK} $now > ~/nohup-provision_stack_${PROVISION_STACK}.log 2>&1 &
-# echo "Integration Server provisioning - Check progress at ~/nohup-provision_stack_${PROVISION_STACK}.log"
+## Install Integration Server
+echo "Launching Integration Server provisioning in the background..."
+PROVISION_STACK="is_stateless"
+/bin/bash ./scripts/provision_setparams.sh ${PROVISION_STACK} "TARGET_HOST" "${webmethods_integration1}"
+/bin/bash ./scripts/provision_setparams.sh ${PROVISION_STACK} "LICENSE_KEY_ALIAS1" "${webmethods_integration_license_key_alias}" "true"
+nohup /bin/bash ./scripts/provision_stack.sh ${PROVISION_STACK} $now > ~/nohup-provision_stack_${PROVISION_STACK}.log 2>&1 &
+echo "Integration Server provisioning - Check progress at ~/nohup-provision_stack_${PROVISION_STACK}.log"
+
+##final clean
+#/bin/bash ./scripts/provision_clean.sh
 
 echo "Product provisoning under way..."
 echo "To check current status, check the webMethods Command Central Jobs"
