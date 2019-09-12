@@ -6,7 +6,14 @@ output "amiuser" {
   value = "${local.base_ami_user}"
 }
 
-//  Output some useful variables for quick SSH access etc.
+output "command_central_url" {
+  value = "https://${aws_instance.bastion.public_ip}:8091/cce/web/"
+}
+
+output "integration_server_url" {
+  value = "http://${aws_instance.webmethods_integration1.public_ip}:5555"
+}
+
 output "bastion-public_ip" {
   value = "${aws_instance.bastion.public_ip}"
 }
