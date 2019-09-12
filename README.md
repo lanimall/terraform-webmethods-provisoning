@@ -326,9 +326,20 @@ ssh -A $(terraform output amiuser)@$(terraform output bastion-public_ip) "tail -
 
 Once done, you should now see the following configurations applied and working in Command Central:
 - Registered product repository
+
+![Command Central Registered product repository](img/cce_provisoning_repo_products.png)
+
 - Registered fix repository
+
+![Command Central Registered fix repository](img/cce_provisoning_repo_fixes.png)
+
 - Registered licenses
+
+![Command Central Registered licenses](img/cce_provisoning_licenses.png)
+
 - Registered passwords
+
+![Command Central Registered passwords](img/cce_provisoning_credentials.png)
 
 ### Run webMethods Products Provisioning
 
