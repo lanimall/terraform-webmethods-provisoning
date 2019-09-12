@@ -15,9 +15,6 @@ echo "export CC_SSH_KEY_FILENAME=\"\"" >> /home/${default_linuxuser}/delenv_cce_
 echo "export CC_SSH_KEY_PWD=\"\"" >> /home/${default_linuxuser}/delenv_cce_secrets.sh
 echo "export CC_SSH_USER=\"\"" >> /home/${default_linuxuser}/delenv_cce_secrets.sh
 
-echo "export CCE_DEVOPS_INSTALL_DIR=\"${cc_devops_install_dir}\"" >> /home/${default_linuxuser}/setenv_cce_devops.sh
-echo "export CCE_DEVOPS_INSTALL_USER=\"${cc_devops_install_user}\"" >> /home/${default_linuxuser}/setenv_cce_devops.sh
-
 # Log everything we do.
 set -x
 exec > /var/log/user-data.log 2>&1
@@ -56,7 +53,7 @@ yum install -y "@Development Tools" java-1.8.0-openjdk-headless bind-utils
 # Install inotify tool to be able to listen to file (useful to know when to start next phases based on file updates)
 yum install -y inotify-tools
 
-function check_dns(){
+function check_dns_record(){
     COUNTER=0
     DNS_RECORD=$1
     DNS_MAXTRIES=$2
@@ -66,7 +63,7 @@ function check_dns(){
         echo "Try $COUNTER - trying again in $DNS_INTERVAL sec"
         sleep $DNS_INTERVAL
     done
-    dnscheck="$(dig +short -t A $DNS_RECORD.)"
+    dns_record_ip="$(dig +short -t A $DNS_RECORD.)"
 }
 
 ##check target user
@@ -86,43 +83,31 @@ else
     echo "${ssh_private_key}" > /home/${webmethods_linuxuser}/.ssh/id_rsa
 
     ##add known hosts to the webmethods_linuxuser home
-    check_dns ${ssh_known_host1_dnsname} 10 5
-    if [ "x$dnscheck" != "x" ]; then
+    check_dns_record ${ssh_known_host1_dnsname} 10 5
+    if [ "x$dns_record_ip" != "x" ]; then
         ssh-keyscan -t rsa -H ${ssh_known_host1_dnsname} >> /home/${webmethods_linuxuser}/.ssh/known_hosts
+        ssh-keyscan -t rsa -H $dns_record_ip >> /home/${webmethods_linuxuser}/.ssh/known_hosts
     fi
 
-    check_dns ${ssh_known_host2_dnsname} 10 5
-    if [ "x$dnscheck" != "x" ]; then
+    check_dns_record ${ssh_known_host2_dnsname} 10 5
+    if [ "x$dns_record_ip" != "x" ]; then
         ssh-keyscan -t rsa -H ${ssh_known_host2_dnsname} >> /home/${webmethods_linuxuser}/.ssh/known_hosts
+        ssh-keyscan -t rsa -H $dns_record_ip >> /home/${webmethods_linuxuser}/.ssh/known_hosts
     fi
 
-    check_dns ${ssh_known_host3_dnsname} 10 5
-    if [ "x$dnscheck" != "x" ]; then
+    check_dns_record ${ssh_known_host3_dnsname} 10 5
+    if [ "x$dns_record_ip" != "x" ]; then
         ssh-keyscan -t rsa -H ${ssh_known_host3_dnsname} >> /home/${webmethods_linuxuser}/.ssh/known_hosts
+        ssh-keyscan -t rsa -H $dns_record_ip >> /home/${webmethods_linuxuser}/.ssh/known_hosts
     fi
-
-    check_dns ${ssh_known_host1_ip} 10 5
-    if [ "x$dnscheck" != "x" ]; then
-        ssh-keyscan -t rsa -H ${ssh_known_host1_ip} >> /home/${webmethods_linuxuser}/.ssh/known_hosts
-    fi
-
-    check_dns ${ssh_known_host2_ip} 10 5
-    if [ "x$dnscheck" != "x" ]; then
-        ssh-keyscan -t rsa -H ${ssh_known_host2_ip} >> /home/${webmethods_linuxuser}/.ssh/known_hosts
-    fi
-
-    check_dns ${ssh_known_host3_ip} 10 5
-    if [ "x$dnscheck" != "x" ]; then
-        ssh-keyscan -t rsa -H ${ssh_known_host3_ip} >> /home/${webmethods_linuxuser}/.ssh/known_hosts
-    fi
-
-    chown -R ${webmethods_linuxuser}:${webmethods_linuxuser} /home/${webmethods_linuxuser}/.ssh
 fi
+
+########### webmethod install section
 
 ## creating target directory if needed
 if [ ! -d ${webmethods_path} ]; then
     echo "creating install directory"
-    mkdir ${webmethods_path}
+    mkdir -p ${webmethods_path}
 fi
 
 ## format and mount the volume for softwareag installation
@@ -134,6 +119,38 @@ echo /dev/xvdf ${webmethods_path} ext4 defaults,nofail 0 2 >> /etc/fstab
 if [ -d ${webmethods_path} ]; then
     chown -R ${webmethods_linuxuser}:${webmethods_linuxuser} ${webmethods_path}
 fi
+
+########### CCE code section
+
+## creating target directory for the code
+if [ ! -d ${cc_devops_install_dir} ]; then
+    echo "Directory [${cc_devops_install_dir}] does not exist - Creating..."
+    mkdir -p ${cc_devops_install_dir}
+fi
+
+# clone webmethods provisoning project
+echo "Getting the webMethods-devops-provisioning project from github and putting in ${cc_devops_install_dir}"
+/bin/git clone --recursive -b rel103 https://github.com/lanimall/webMethods-devops-provisioning.git ${cc_devops_install_dir}
+
+## applying user/group on the target directory
+echo "Applying user ${webmethods_linuxuser} ownership on the target directory ${cc_devops_install_dir}"
+chown -R ${webmethods_linuxuser}:${webmethods_linuxuser} ${cc_devops_install_dir}
+
+########### useful files to copy to the webmethods_linuxuser home 
+
+##move the provisoning "secrets" in the home of the target webmethods_linuxuser user so the provisoning scripts can use it
+echo "Moving the provisoning secrets in the home of the target user ${webmethods_linuxuser}"
+cp -f /home/${default_linuxuser}/setenv_cce_secrets.sh /home/${webmethods_linuxuser}/.setenv_cce_secrets.sh
+
+##move the product licenses package in the home of the target webmethods_linuxuser user so the provisoning scripts can use it
+LICENSE_FILE="/home/${default_linuxuser}/sag_licenses.zip"
+while [ ! -f $LICENSE_FILE  ]; do echo "File $LICENSE_FILE not found - Sleeping for 10 seconds."; sleep 10; done
+echo "File $LICENSE_FILE found!!!";
+echo "Moving the product licenses package in the home of the target user $webmethods_linuxuser"
+cp -f $LICENSE_FILE /home/${webmethods_linuxuser}/
+
+# applying ownership to the webmethods_linuxuser home
+chown -R ${webmethods_linuxuser}:${webmethods_linuxuser} /home/${webmethods_linuxuser}/
 
 # Allow the default_linuxuser to sudo without a tty, which is required when we run post
 # install scripts on the server.

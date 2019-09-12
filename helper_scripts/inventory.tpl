@@ -1,9 +1,0 @@
-#!/usr/bin/env bash
-export webmethods_integration1=${webmethods_integration1}
-export webmethods_integration_license_key_alias=${webmethods_integration_license_key_alias}
-
-export webmethods_universalmessaging1=${webmethods_universalmessaging1}
-export webmethods_universalmessaging_license_key_alias=${webmethods_universalmessaging_license_key_alias}
-
-export webmethods_terracotta1=${webmethods_terracotta1}
-export webmethods_terracotta_license_key_alias=${webmethods_terracotta_license_key_alias}
