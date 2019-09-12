@@ -33,6 +33,7 @@ wait_server_provisioning_done $CMD_UNIQUE_ID
 if [ "$BOOTSTRAP_INSTALL_CCE" = "true" ]; then
     echo "Executing the CCE installation phase."
     nohup /bin/bash ~/cce-install-configure.sh "true" "false" $CMD_UNIQUE_ID > ~/nohup-bootstrap-cce-install.log 2>&1 &
+    echo "CCE installation phase started in background. Check progress at: ~/nohup-bootstrap-cce-install.log"
 else
     echo "Not executing the CCE installation phase."
 fi
@@ -40,6 +41,7 @@ fi
 if [ "$BOOTSTRAP_CONFIGURE_CCE" = "true" ]; then
     echo "Executing the CCE configuration phase."
     nohup /bin/bash ~/cce-install-configure.sh "false" "true" $CMD_UNIQUE_ID > ~/nohup-bootstrap-cce-configure.log 2>&1 &
+    echo "CCE configuration phase started in background. Check progress at: ~/nohup-bootstrap-cce-configure.log"
 else
     echo "Not executing the CCE configuration phase."
 fi
@@ -47,6 +49,7 @@ fi
 if [ "$BOOTSTRAP_CCE_INSTALL_PRODUCTS" = "true" ]; then
     echo "Executing the CCE wM Products Installation phase."
     nohup /bin/bash ~/cce-inventory-install.sh $CMD_UNIQUE_ID > ~/nohup-bootstrap-cce-inventory-install.log 2>&1 &
+    echo "CCE wM Products Installation phase started in background. Check progress at: ~/nohup-bootstrap-cce-inventory-install.log"
 else
     echo "Not executing the CCE wM Products Installation phase."
 fi
