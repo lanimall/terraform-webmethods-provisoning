@@ -16,6 +16,10 @@ In this specific demo, the following products will get installed automatically:
  - Terracotta Caching Server 10.3
  - webMethods Universal Messaging 10.3
 
+This is what you should see at the end:
+
+![Command Central with webMethods Products Provisionned and Managed](img/cce_provisoning_final.png)
+
 ## Prerequisites
 
 You need:
