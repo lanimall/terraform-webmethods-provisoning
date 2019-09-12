@@ -24,12 +24,7 @@ This is what you should see at the end:
 
 You need:
 
-1. [Terraform](https://www.terraform.io/intro/getting-started/install.html)
-
-    If on MAC, simple install:
-    ```
-    brew update && brew install terraform
-    ```
+1. Terraform for your platform. Detailed install instruction at [Terraform Install](https://www.terraform.io/intro/getting-started/install.html)
 
 2. The project should work on any cloud (thanks to Terraform multi-platform ability), but we've tested it on AWS so far.
 
