@@ -1,10 +1,20 @@
 # terraform-webmethods-provisioning
 
-Demo project that leverages terraform and softwareAG Command Central for creating a complete webmethods infrastructure
+Demo project that leverages terraform and softwareAG Command Central for creating a complete webmethods infrastructure.
+This demo is meant to be a good starting point for anyone wanting to implement "Infrastructure-As-Code" for their webMethods stack.
 
-This project works closely with project [webMethods-devops-provisioning]https://github.com/lanimall/webMethods-devops-provisioning.git which takes care of the actual provisioning of the webMethods products.
+This project works closely with project [webMethods-devops-provisioning](https://github.com/lanimall/webMethods-devops-provisioning.git),
+which takes care of the actual provisioning of the webMethods products using webMethods Command Central Auto-Provisoning templates and features.
 
-The terraform portion will automatically create the infrastructure on AWS, as well as bootstrap the actual webMethods product provisioning outlined in [webMethods-devops-provisioning]https://github.com/lanimall/webMethods-devops-provisioning.git
+The demo will automatically:
+ - create the cloud infrastructure
+ - bootstrap the actual webMethods products defined in [webMethods-devops-provisioning](https://github.com/lanimall/webMethods-devops-provisioning.git)
+
+In this specific demo, the following products will get installed automatically:
+ - webMethods Command Central 10.3
+ - webMethods Integration Server 10.3
+ - Terracotta Caching Server 10.3
+ - webMethods Universal Messaging 10.3
 
 ## Prerequisites
 
