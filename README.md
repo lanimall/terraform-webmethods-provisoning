@@ -362,6 +362,10 @@ ssh -A $(terraform output amiuser)@$(terraform output bastion-public_ip) "tail -
 ssh -A $(terraform output amiuser)@$(terraform output bastion-public_ip) "tail -f ~/nohup-wmprovisioning-provision_stack_um.log"
 ```
 
+This is what you should see at the end:
+
+![Command Central with webMethods Products Provisionned and Managed](img/cce_provisoning_final.png)
+
 ### Post Install
 
 After the installation, there are couple of setup items to run as root... Let's run the post install script on all the newly provisonned servers:
