@@ -37,14 +37,31 @@ else
     echo "${webmethods_linuxuser} user does not exist...creating"
     useradd ${webmethods_linuxuser}
     passwd -l ${webmethods_linuxuser}
+fi
+    
+##add SSH folder to webmethods_linuxuser home as well as the default_linuxuser
+if [ ! -d /home/${default_linuxuser}/.ssh ]; then
+    mkdir /home/${default_linuxuser}/.ssh
+    chmod 700 /home/${default_linuxuser}/.ssh
+    chown ${default_linuxuser}:${default_linuxuser} /home/${default_linuxuser}/.ssh
+fi
 
-    mkdir /home/${webmethods_linuxuser}/.ssh
-    chmod 700 /home/${webmethods_linuxuser}/.ssh
-    touch /home/${webmethods_linuxuser}/.ssh/authorized_keys
-    chmod 600 /home/${webmethods_linuxuser}/.ssh/authorized_keys
+if [ "x${webmethods_linuxuser}" != "x${default_linuxuser}" ]; then
+    if [ ! -d /home/${webmethods_linuxuser}/.ssh ]; then
+        mkdir /home/${webmethods_linuxuser}/.ssh
+        chmod 700 /home/${webmethods_linuxuser}/.ssh
+        chown ${webmethods_linuxuser}:${webmethods_linuxuser} /home/${webmethods_linuxuser}/.ssh
+    fi
+fi
+
+##add public key to the webmethods_linuxuser home as well as the default_linuxuser
+echo "${ssh_public_key}" > /home/${default_linuxuser}/.ssh/authorized_keys
+chmod 600 /home/${default_linuxuser}/.ssh/authorized_keys
+chown ${default_linuxuser}:${default_linuxuser} /home/${default_linuxuser}/.ssh/authorized_keys
+if [ "x${webmethods_linuxuser}" != "x${default_linuxuser}" ]; then
     echo "${ssh_public_key}" > /home/${webmethods_linuxuser}/.ssh/authorized_keys
-
-    chown -R ${webmethods_linuxuser}:${webmethods_linuxuser} /home/${webmethods_linuxuser}/.ssh
+    chmod 600 /home/${webmethods_linuxuser}/.ssh/authorized_keys
+    chown ${webmethods_linuxuser}:${webmethods_linuxuser} /home/${webmethods_linuxuser}/.ssh/authorized_keys
 fi
 
 ## creating target directory if needed

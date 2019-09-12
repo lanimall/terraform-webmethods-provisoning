@@ -1,19 +1,19 @@
 #!/usr/bin/env bash
 
 ##before we log everything...
-echo "export CC_PASSWORD=\"${cc_password}\"" > /home/${default_linuxuser}/setenv_cce_secrets.sh
-echo "export CC_SAG_REPO_USR=\"${webmethods_repo_username}\"" >> /home/${default_linuxuser}/setenv_cce_secrets.sh
-echo "export CC_SAG_REPO_PWD=\"${webmethods_repo_password}\"" >> /home/${default_linuxuser}/setenv_cce_secrets.sh
-echo "export CC_SSH_KEY_FILENAME=\"${webmethods_cc_ssh_key_filename}\"" >> /home/${default_linuxuser}/setenv_cce_secrets.sh
-echo "export CC_SSH_KEY_PWD=\"${webmethods_cc_ssh_key_pwd}\"" >> /home/${default_linuxuser}/setenv_cce_secrets.sh
-echo "export CC_SSH_USER=\"${webmethods_linuxuser}\"" >> /home/${default_linuxuser}/setenv_cce_secrets.sh
+echo "export CC_PASSWORD=\"${cc_password}\"" > /home/${default_linuxuser}/.setenv_cce_secrets.sh
+echo "export CC_SAG_REPO_USR=\"${webmethods_repo_username}\"" >> /home/${default_linuxuser}/.setenv_cce_secrets.sh
+echo "export CC_SAG_REPO_PWD=\"${webmethods_repo_password}\"" >> /home/${default_linuxuser}/.setenv_cce_secrets.sh
+echo "export CC_SSH_KEY_FILENAME=\"${webmethods_cc_ssh_key_filename}\"" >> /home/${default_linuxuser}/.setenv_cce_secrets.sh
+echo "export CC_SSH_KEY_PWD=\"${webmethods_cc_ssh_key_pwd}\"" >> /home/${default_linuxuser}/.setenv_cce_secrets.sh
+echo "export CC_SSH_USER=\"${webmethods_linuxuser}\"" >> /home/${default_linuxuser}/.setenv_cce_secrets.sh
 
-echo "export CC_PASSWORD=\"\"" > /home/${default_linuxuser}/delenv_cce_secrets.sh
-echo "export CC_SAG_REPO_USR=\"\"" >> /home/${default_linuxuser}/delenv_cce_secrets.sh
-echo "export CC_SAG_REPO_PWD=\"\"" >> /home/${default_linuxuser}/delenv_cce_secrets.sh
-echo "export CC_SSH_KEY_FILENAME=\"\"" >> /home/${default_linuxuser}/delenv_cce_secrets.sh
-echo "export CC_SSH_KEY_PWD=\"\"" >> /home/${default_linuxuser}/delenv_cce_secrets.sh
-echo "export CC_SSH_USER=\"\"" >> /home/${default_linuxuser}/delenv_cce_secrets.sh
+echo "export CC_PASSWORD=\"\"" > /home/${default_linuxuser}/.delenv_cce_secrets.sh
+echo "export CC_SAG_REPO_USR=\"\"" >> /home/${default_linuxuser}/.delenv_cce_secrets.sh
+echo "export CC_SAG_REPO_PWD=\"\"" >> /home/${default_linuxuser}/.delenv_cce_secrets.sh
+echo "export CC_SSH_KEY_FILENAME=\"\"" >> /home/${default_linuxuser}/.delenv_cce_secrets.sh
+echo "export CC_SSH_KEY_PWD=\"\"" >> /home/${default_linuxuser}/.delenv_cce_secrets.sh
+echo "export CC_SSH_USER=\"\"" >> /home/${default_linuxuser}/.delenv_cce_secrets.sh
 
 # Log everything we do.
 set -x
@@ -74,29 +74,67 @@ else
     echo "${webmethods_linuxuser} user does not exist...creating"
     useradd ${webmethods_linuxuser}
     passwd -l ${webmethods_linuxuser}
+fi
 
-    ##add private key to the webmethods_linuxuser home
-    mkdir /home/${webmethods_linuxuser}/.ssh
-    chmod 700 /home/${webmethods_linuxuser}/.ssh
-    touch /home/${webmethods_linuxuser}/.ssh/id_rsa
-    chmod 600 /home/${webmethods_linuxuser}/.ssh/id_rsa
+
+##add SSH folder to webmethods_linuxuser home as well as the default_linuxuser
+if [ ! -d /home/${default_linuxuser}/.ssh ]; then
+    mkdir /home/${default_linuxuser}/.ssh
+    chmod 700 /home/${default_linuxuser}/.ssh
+    chown ${default_linuxuser}:${default_linuxuser} /home/${default_linuxuser}/.ssh
+fi
+
+if [ "x${webmethods_linuxuser}" != "x${default_linuxuser}" ]; then
+    if [ ! -d /home/${webmethods_linuxuser}/.ssh ]; then
+        mkdir /home/${webmethods_linuxuser}/.ssh
+        chmod 700 /home/${webmethods_linuxuser}/.ssh
+        chown ${webmethods_linuxuser}:${webmethods_linuxuser} /home/${webmethods_linuxuser}/.ssh
+    fi
+fi
+
+##add private key to the webmethods_linuxuser home as well as the default_linuxuser
+echo "${ssh_private_key}" > /home/${default_linuxuser}/.ssh/id_rsa
+chmod 600 /home/${default_linuxuser}/.ssh/id_rsa
+chown ${default_linuxuser}:${default_linuxuser} /home/${default_linuxuser}/.ssh/id_rsa
+if [ "x${webmethods_linuxuser}" != "x${default_linuxuser}" ]; then
     echo "${ssh_private_key}" > /home/${webmethods_linuxuser}/.ssh/id_rsa
+    chmod 600 /home/${webmethods_linuxuser}/.ssh/id_rsa
+    chown ${webmethods_linuxuser}:${webmethods_linuxuser} /home/${webmethods_linuxuser}/.ssh/id_rsa
+fi
 
-    ##add known hosts to the webmethods_linuxuser home
-    check_dns_record ${ssh_known_host1_dnsname} 10 5
-    if [ "x$dns_record_ip" != "x" ]; then
+##add known hosts to the webmethods_linuxuser home
+touch /home/${default_linuxuser}/.ssh/known_hosts
+chown ${default_linuxuser}:${default_linuxuser} /home/${default_linuxuser}/.ssh/known_hosts 
+if [ "x${webmethods_linuxuser}" != "x${default_linuxuser}" ]; then
+    touch /home/${webmethods_linuxuser}/.ssh/known_hosts
+    chown ${webmethods_linuxuser}:${webmethods_linuxuser} /home/${webmethods_linuxuser}/.ssh/known_hosts 
+fi
+
+check_dns_record ${ssh_known_host1_dnsname} 10 5
+if [ "x$dns_record_ip" != "x" ]; then
+    ssh-keyscan -t rsa -H ${ssh_known_host1_dnsname} >> /home/${default_linuxuser}/.ssh/known_hosts
+    ssh-keyscan -t rsa -H $dns_record_ip >> /home/${default_linuxuser}/.ssh/known_hosts
+    if [ "x${webmethods_linuxuser}" != "x${default_linuxuser}" ]; then
         ssh-keyscan -t rsa -H ${ssh_known_host1_dnsname} >> /home/${webmethods_linuxuser}/.ssh/known_hosts
         ssh-keyscan -t rsa -H $dns_record_ip >> /home/${webmethods_linuxuser}/.ssh/known_hosts
     fi
+fi
 
-    check_dns_record ${ssh_known_host2_dnsname} 10 5
-    if [ "x$dns_record_ip" != "x" ]; then
+check_dns_record ${ssh_known_host2_dnsname} 10 5
+if [ "x$dns_record_ip" != "x" ]; then
+    ssh-keyscan -t rsa -H ${ssh_known_host2_dnsname} >> /home/${default_linuxuser}/.ssh/known_hosts
+    ssh-keyscan -t rsa -H $dns_record_ip >> /home/${default_linuxuser}/.ssh/known_hosts
+    if [ "x${webmethods_linuxuser}" != "x${default_linuxuser}" ]; then
         ssh-keyscan -t rsa -H ${ssh_known_host2_dnsname} >> /home/${webmethods_linuxuser}/.ssh/known_hosts
         ssh-keyscan -t rsa -H $dns_record_ip >> /home/${webmethods_linuxuser}/.ssh/known_hosts
     fi
+fi
 
-    check_dns_record ${ssh_known_host3_dnsname} 10 5
-    if [ "x$dns_record_ip" != "x" ]; then
+check_dns_record ${ssh_known_host3_dnsname} 10 5
+if [ "x$dns_record_ip" != "x" ]; then
+    ssh-keyscan -t rsa -H ${ssh_known_host3_dnsname} >> /home/${default_linuxuser}/.ssh/known_hosts
+    ssh-keyscan -t rsa -H $dns_record_ip >> /home/${default_linuxuser}/.ssh/known_hosts
+    if [ "x${webmethods_linuxuser}" != "x${default_linuxuser}" ]; then
         ssh-keyscan -t rsa -H ${ssh_known_host3_dnsname} >> /home/${webmethods_linuxuser}/.ssh/known_hosts
         ssh-keyscan -t rsa -H $dns_record_ip >> /home/${webmethods_linuxuser}/.ssh/known_hosts
     fi
@@ -139,18 +177,19 @@ chown -R ${webmethods_linuxuser}:${webmethods_linuxuser} ${cc_devops_install_dir
 ########### useful files to copy to the webmethods_linuxuser home 
 
 ##move the provisoning "secrets" in the home of the target webmethods_linuxuser user so the provisoning scripts can use it
-echo "Moving the provisoning secrets in the home of the target user ${webmethods_linuxuser}"
-cp -f /home/${default_linuxuser}/setenv_cce_secrets.sh /home/${webmethods_linuxuser}/.setenv_cce_secrets.sh
+if [ "x${webmethods_linuxuser}" != "x${default_linuxuser}" ]; then
+    echo "Copying the provisoning secrets in the home of the target user ${webmethods_linuxuser}"
+    cp -f /home/${default_linuxuser}/.setenv_cce_secrets.sh /home/${webmethods_linuxuser}/.setenv_cce_secrets.sh
+fi
 
 ##move the product licenses package in the home of the target webmethods_linuxuser user so the provisoning scripts can use it
-LICENSE_FILE="/home/${default_linuxuser}/sag_licenses.zip"
-while [ ! -f $LICENSE_FILE  ]; do echo "File $LICENSE_FILE not found - Sleeping for 10 seconds."; sleep 10; done
-echo "File $LICENSE_FILE found!!!";
-echo "Moving the product licenses package in the home of the target user $webmethods_linuxuser"
-cp -f $LICENSE_FILE /home/${webmethods_linuxuser}/
-
-# applying ownership to the webmethods_linuxuser home
-chown -R ${webmethods_linuxuser}:${webmethods_linuxuser} /home/${webmethods_linuxuser}/
+if [ "x${webmethods_linuxuser}" != "x${default_linuxuser}" ]; then
+    LICENSE_FILE="/home/${default_linuxuser}/sag_licenses.zip"
+    while [ ! -f $LICENSE_FILE  ]; do echo "File $LICENSE_FILE not found - Sleeping for 10 seconds."; sleep 10; done
+    echo "File $LICENSE_FILE found!!!";
+    echo "Copying the product licenses package in the home of the target user $webmethods_linuxuser"
+    cp -f $LICENSE_FILE /home/${webmethods_linuxuser}/sag_licenses.zip
+fi
 
 # Allow the default_linuxuser to sudo without a tty, which is required when we run post
 # install scripts on the server.
