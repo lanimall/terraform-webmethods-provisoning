@@ -64,10 +64,12 @@ if [ "x${webmethods_linuxuser}" != "x${default_linuxuser}" ]; then
     chown ${webmethods_linuxuser}:${webmethods_linuxuser} /home/${webmethods_linuxuser}/.ssh/authorized_keys
 fi
 
+########### webmethod install section
+
 ## creating target directory if needed
 if [ ! -d ${webmethods_path} ]; then
     echo "creating install directory"
-    mkdir ${webmethods_path}
+    mkdir -p ${webmethods_path}
 fi
 
 ## format and mount the volume for softwareag installation

@@ -26,16 +26,6 @@ resource "aws_route53_record" "webmethods_commandcentral-a-record" {
     ]
 }
 
-resource "aws_route53_record" "webmethods_integration1-a-record" {
-    zone_id = "${aws_route53_zone.webmethods-internal.zone_id}"
-    name = "integration1.webmethods.local"
-    type = "A"
-    ttl  = 300
-    records = [
-        "${aws_instance.webmethods_integration1.private_ip}"
-    ]
-}
-
 resource "aws_route53_record" "webmethods_universalmessaging1-a-record" {
     zone_id = "${aws_route53_zone.webmethods-internal.zone_id}"
     name = "universalmessaging1.webmethods.local"
@@ -53,5 +43,35 @@ resource "aws_route53_record" "webmethods_terracotta1-a-record" {
     ttl  = 300
     records = [
         "${aws_instance.webmethods_terracotta1.private_ip}"
+    ]
+}
+
+resource "aws_route53_record" "webmethods_integration1-a-record" {
+    zone_id = "${aws_route53_zone.webmethods-internal.zone_id}"
+    name = "integration1.webmethods.local"
+    type = "A"
+    ttl  = 300
+    records = [
+        "${aws_instance.webmethods_integration1.private_ip}"
+    ]
+}
+
+resource "aws_route53_record" "webmethods_integration2-a-record" {
+    zone_id = "${aws_route53_zone.webmethods-internal.zone_id}"
+    name = "integration2.webmethods.local"
+    type = "A"
+    ttl  = 300
+    records = [
+        "${aws_instance.webmethods_integration2.private_ip}"
+    ]
+}
+
+resource "aws_route53_record" "webmethods_integration3-a-record" {
+    zone_id = "${aws_route53_zone.webmethods-internal.zone_id}"
+    name = "integration3.webmethods.local"
+    type = "A"
+    ttl  = 300
+    records = [
+        "${aws_instance.webmethods_integration3.private_ip}"
     ]
 }
