@@ -37,7 +37,7 @@ cd $CCE_DEVOPS_INSTALL_DIR
 
 ## Install Universal Messaging
 echo "Launching Universal Messaging provisioning in the background..."
-PROVISION_STACK=um
+PROVISION_STACK="um"
 /bin/bash ./scripts/provision_setparams.sh $PROVISION_STACK "TARGET_HOST" "${webmethods_universalmessaging1}"
 /bin/bash ./scripts/provision_setparams.sh $PROVISION_STACK "LICENSE_KEY_ALIAS1" "${webmethods_universalmessaging_license_key_alias}" "true"
 nohup /bin/bash ./scripts/provision_stack.sh $PROVISION_STACK $CMD_UNIQUE_ID > ~/nohup-wmprovisioning-provision_stack_$PROVISION_STACK.log 2>&1 &
@@ -45,7 +45,7 @@ echo "Universal Messaging provisioning - Check progress at ~/nohup-wmprovisionin
 
 ## Install Terracotta
 echo "Launching Terracotta provisioning in the background..."
-PROVISION_STACK=tc
+PROVISION_STACK="tc"
 /bin/bash ./scripts/provision_setparams.sh $PROVISION_STACK "TARGET_HOST" "${webmethods_terracotta1}"
 /bin/bash ./scripts/provision_setparams.sh $PROVISION_STACK "LICENSE_KEY_ALIAS1" "${webmethods_terracotta_license_key_alias}" "true"
 nohup /bin/bash ./scripts/provision_stack.sh $PROVISION_STACK $CMD_UNIQUE_ID > ~/nohup-wmprovisioning-provision_stack_$PROVISION_STACK.log 2>&1 &
