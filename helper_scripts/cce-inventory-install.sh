@@ -56,6 +56,7 @@ echo "Launching Integration Server provisioning in the background..."
 PROVISION_STACK="is_stateless"
 /bin/bash ./scripts/provision_setparams.sh $PROVISION_STACK "TARGET_HOST" "${webmethods_integration1}"
 /bin/bash ./scripts/provision_setparams.sh $PROVISION_STACK "LICENSE_KEY_ALIAS1" "${webmethods_integration_license_key_alias}" "true"
+/bin/bash ./scripts/provision_setparams.sh $PROVISION_STACK "ADMIN_PASSWORD" "manage123" "true"
 nohup /bin/bash ./scripts/provision_stack.sh $PROVISION_STACK $CMD_UNIQUE_ID > ~/nohup-wmprovisioning-provision_stack_$PROVISION_STACK.log 2>&1 &
 echo "Integration Server provisioning - Check progress at ~/nohup-wmprovisioning-provision_stack_$PROVISION_STACK.log"
 
