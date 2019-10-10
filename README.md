@@ -42,7 +42,7 @@ You need:
 Run the following commands to get the terraform code, generate the ssh keys we'll need, and fix the permissions on the keys
 
 ```
-git clone https://github.com/lanimall/terraform-webmethods-provisioning.git
+git clone --branch workingdemo_wm103_v1.0 https://github.com/lanimall/terraform-webmethods-provisoning.git
 cd ./terraform-webmethods-provisioning
 ssh-keygen -b 2048 -t rsa -f ./helper_scripts/id_rsa_bastion -q -N ""
 ssh-keygen -b 2048 -t rsa -f ./helper_scripts/id_rsa -q -N ""
